@@ -8,12 +8,16 @@
     using System.ComponentModel;
     using VSIXProject1.Services;
     using System.Collections.Generic;
+    using Microsoft.VisualStudio.Imaging;
+    using System.Windows.Input;
 
     /// <summary>
     /// Interaction logic for ToolWindow1Control.
     /// </summary>
     public partial class ToolWindow1Control : UserControl
     {
+        public static readonly Microsoft.VisualStudio.Imaging.Interop.ImageMoniker MenuIconMoniker = Microsoft.VisualStudio.Imaging.KnownMonikers.Solution;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow1Control"/> class.
         /// </summary>
@@ -45,11 +49,12 @@
             // https://stackoverflow.com/questions/17005910/how-to-hide-treeview-root
 
             //MenuItem root = new MenuItem() { Title = "Menu" }; // fixme hide that one?!
-            MenuItem childItem1 = new MenuItem() { Title = "Child item #1", Icon = icon1, Weight = FontWeights.Bold, SolutionType = SolutionType.Folder };
-            childItem1.Items.Add(new MenuItem() { Title = "Child item #1.1", Icon = icon2, SolutionType = SolutionType.Solution });
-            childItem1.Items.Add(new MenuItem() { Title = "Child item #1.2", Icon = icon2, SolutionType = SolutionType.Solution });
+            MenuItem childItem1 = new MenuItem(null) { Title = "Child item #1", Icon = icon1, Weight = FontWeights.Bold, SolutionType = SolutionType.Folder };
+            childItem1.Items.Add(new MenuItem(childItem1) { Title = "Child item #1.1", Icon = icon2, SolutionType = SolutionType.Solution });
+            childItem1.Items.Add(new MenuItem(childItem1) { Title = "Child item #1.2", Icon = icon2, SolutionType = SolutionType.Solution });
             solutions.Items.Add(childItem1);
-            solutions.Items.Add(new MenuItem() { Title = "Child item #2", Icon = icon2, SolutionType = SolutionType.Solution });
+            solutions.Items.Add(new MenuItem(null) { Title = "Child item #2", Icon = icon2, SolutionType = SolutionType.Solution, ContextMenuStyle = solutions.Resources["ContextMenuStyle"] });
+
             //solutions.Items.Add(root);
 
             //title.FontWeight = FontWeights.Bold;
@@ -57,15 +62,15 @@
             // all this should be async but.. also on UI thread?!
             // or maybe this should be done above and just the items are fed to the control?
             //var fileMenuRecents = new FileMenuRecents(serviceProvider);
-            var recentItems = new MenuItem() { Title = "Recent", Icon = icon1, Weight = FontWeights.Bold, SolutionType = SolutionType.Recents };
-            solutions.Items.Add(recentItems);
+            var recentItems = new MenuItem(null) { Title = "Recent", Icon = icon1, Weight = FontWeights.Bold, SolutionType = SolutionType.Recents };
+            solutions.Items.Insert(0, recentItems);
             var projects = state.Projects;
             foreach (var recent in projects)
             {
                 // fixme test availability?
                 var path = System.IO.Path.GetDirectoryName(recent.Path);
                 var sol = System.IO.Path.GetFileNameWithoutExtension(recent.Path);
-                recentItems.Items.Add(new MenuItem() { Title = path + " :: " + sol, Icon = icon2, SolutionType = SolutionType.Recent });
+                recentItems.Items.Add(new MenuItem(recentItems) { Title = path + " :: " + sol, Icon = icon2, SolutionType = SolutionType.Recent });
             }
         }
 
@@ -83,20 +88,15 @@
                 "ToolWindow1");
         }
 
-        public enum SolutionType
-        {
-            Recents,
-            Recent,
-            Folder,
-            Solution
-        }
-
         public class MenuItem : System.ComponentModel.INotifyPropertyChanged
         {
-            public MenuItem()
+            public MenuItem(MenuItem parent)
             {
                 this.Items = new ObservableCollection<MenuItem>();
+                Parent = parent;
             }
+
+            public MenuItem Parent { get; }
 
             public string Title { get; set; }
 
@@ -109,6 +109,9 @@
             public SolutionType SolutionType { get; set; }
 
             public ObservableCollection<MenuItem> Items { get; set; }
+
+            //public string ContextMenuStyle => "ContextMenuStyle";
+            public object ContextMenuStyle { get;set;}
 
             public event PropertyChangedEventHandler PropertyChanged;
 
@@ -149,6 +152,125 @@
             System.Diagnostics.Debug.WriteLine("BAH");
         }
 
+        // context menu via styles = data context works
+        // https://stackoverflow.com/questions/13420994/how-to-display-context-menu-for-treeview-item-in-a-hierarchial-data-template-in
+
+        private void Menu_Test_Click(object sender, RoutedEventArgs e)
+        {
+            var control = sender as System.Windows.Controls.MenuItem;
+            var menuItem = control.DataContext as MenuItem;
+            var solution = menuItem.Title; // that's what we would open
+            System.Diagnostics.Debug.WriteLine("Menu 'Test' on " + solution + "(" + menuItem.SolutionType + ")");
+        }
+
+        private void Menu_AddFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var control = sender as System.Windows.Controls.MenuItem;
+            var menuItem = control.DataContext as MenuItem;
+            var solution = menuItem.Title; // that's what we would open
+            System.Diagnostics.Debug.WriteLine("Menu 'AddFolder' on " + solution + "(" + menuItem.SolutionType + ")");
+            menuItem.Items.Add(new MenuItem(menuItem) { SolutionType=SolutionType.Folder, Title="(new folder)", Icon = Microsoft.VisualStudio.Imaging.KnownMonikers.FolderClosed });
+        }
+
+        private void Menu_AddSolution_Click(object sender, RoutedEventArgs e)
+        {
+            var control = sender as System.Windows.Controls.MenuItem;
+            var menuItem = control.DataContext as MenuItem;
+            var solution = menuItem.Title; // that's what we would open
+            System.Diagnostics.Debug.WriteLine("Menu 'AddSolution' on " + solution + "(" + menuItem.SolutionType + ")");
+            menuItem.Items.Add(new MenuItem(menuItem) { SolutionType = SolutionType.Solution, Title = "(new solution)", Icon = Microsoft.VisualStudio.Imaging.KnownMonikers.Solution });
+        }
+
+        private void Menu_RemoveFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var control = sender as System.Windows.Controls.MenuItem;
+            var menuItem = control.DataContext as MenuItem;
+            var solution = menuItem.Title; // that's what we would open
+            System.Diagnostics.Debug.WriteLine("Menu 'RemoveFolder' on " + solution + "(" + menuItem.SolutionType + ")");
+
+            var parentItems = menuItem.Parent;
+            if (parentItems == null) return; // ?!
+            parentItems.Items.Remove(menuItem);
+        }
+
+        private void Menu_RemoveSolution_Click(object sender, RoutedEventArgs e)
+        {
+            var control = sender as System.Windows.Controls.MenuItem;
+            var menuItem = control.DataContext as MenuItem;
+            var solution = menuItem.Title; // that's what we would open
+            System.Diagnostics.Debug.WriteLine("Menu 'RemoveFolder' on " + solution + "(" + menuItem.SolutionType + ")");
+
+            var parentItems = menuItem.Parent;
+            if (parentItems == null) return; // ?!
+            parentItems.Items.Remove(menuItem);
+        }
+
+        private void Solutions_MouseDoubleClick(object sender, RoutedEventArgs e)
+        {
+            var control = sender as TreeViewItem;
+            var menuItem = control.DataContext as MenuItem;
+            //var menuItem = e.OriginalSource.DataContext 
+            System.Diagnostics.Debug.WriteLine("DoubleClick! " + menuItem.Title);
+        }
+
+        private void Solutions_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount <= 1)
+                return;
+
+
+            MenuItem item;
+            switch (e.OriginalSource)
+            {
+                case StackPanel panel:
+                    item = panel.DataContext as MenuItem;
+                    break;
+                case TextBlock text:
+                    item = ((StackPanel)text.Parent).DataContext as MenuItem;
+                    break;
+                case CrispImage img:
+                    item = ((StackPanel)img.Parent).DataContext as MenuItem;
+                    break;
+                default:
+                    return;
+            }
+
+            switch (item.SolutionType)
+            {
+                case SolutionType.Folder:
+                case SolutionType.Recents:
+                    return;
+                default:
+                    e.Handled = true;
+                    break;
+            }
+
+            System.Diagnostics.Debug.WriteLine("DoubleClick! " + item.Title);
+        }
+
+        private void Solutions_MouseDoubleClick_1(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            MenuItem item;
+            switch (e.OriginalSource)
+            {
+                case StackPanel panel:
+                    item = panel.DataContext as MenuItem;
+                    break;
+                case TextBlock text:
+                    item = ((StackPanel) text.Parent).DataContext as MenuItem;
+                    break;
+                case CrispImage img:
+                    item = ((StackPanel) img.Parent).DataContext as MenuItem;
+                    break;
+                default:
+                    return;
+            }
+
+            e.Handled = true;
+            System.Diagnostics.Debug.WriteLine("DoubleClick! " + item.Title);
+        }
+
+        /*
         // https://stackoverflow.com/questions/1398943/context-menu-for-xaml-treeviewitem-distinguished-by-different-attributes
         // https://stackoverflow.com/questions/592373/select-treeview-node-on-right-click-before-displaying-contextmenu
         private void SolutionTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -171,5 +293,6 @@
                     break;
             }
         }
+        */
     }
 }

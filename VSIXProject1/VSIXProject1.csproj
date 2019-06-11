@@ -50,6 +50,7 @@
     <Compile Include="Services\Files.cs" />
     <Compile Include="Services\Kind.cs" />
     <Compile Include="Services\Types.cs" />
+    <Compile Include="SolutionType.cs" />
     <Compile Include="ToolWindow1.cs" />
     <Compile Include="ToolWindow1Command.cs" />
     <Compile Include="ToolWindow1Control.xaml.cs">
