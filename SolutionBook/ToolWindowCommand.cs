@@ -1,36 +1,11 @@
 ﻿using System;
 using System.ComponentModel.Design;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
-namespace VSIXProject1
+namespace SolutionBook
 {
-    // add custom async tool window
-    // https://docs.microsoft.com/en-us/visualstudio/extensibility/extending-and-customizing-tool-windows?view=vs-2019
-    // https://www.wpf-tutorial.com/treeview-control/treeview-data-binding-multiple-templates/
-    // todo
-    //  add a tree with solutions
-    //    tree = ok
-    //    style the tree (respect VS theme)
-    //    icons for solutions vs folders (& missing solutions?)
-    //    action when click = msgbox for now
-    //    context menu
-    //      edit = corresp. window w/ title & path
-    //      add = same
-    //      delete
-    //    drag and drop to reorder
-    //  open a solution when clicking
-    //  disable when a solution is open
-    //  also show recent items
-
-    /// <summary>
-    /// Command handler
-    /// </summary>
-    internal sealed class ToolWindow1Command
+    internal sealed class ToolWindowCommand
     {
         /// <summary>
         /// Command ID.
@@ -45,7 +20,7 @@ namespace VSIXProject1
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
-        private readonly AsyncPackage package;
+        private readonly AsyncPackage _package;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow1Command"/> class.
@@ -53,13 +28,13 @@ namespace VSIXProject1
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
         /// <param name="commandService">Command service to add command to, not null.</param>
-        private ToolWindow1Command(AsyncPackage package, OleMenuCommandService commandService)
+        private ToolWindowCommand(AsyncPackage package, OleMenuCommandService commandService)
         {
-            this.package = package ?? throw new ArgumentNullException(nameof(package));
+            _package = package ?? throw new ArgumentNullException(nameof(package));
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
             var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem = new MenuCommand(this.Execute, menuCommandID);
+            var menuItem = new MenuCommand((s, e) => Execute(), menuCommandID);
 
             commandService.AddCommand(menuItem);
         }
@@ -67,21 +42,10 @@ namespace VSIXProject1
         /// <summary>
         /// Gets the instance of the command.
         /// </summary>
-        public static ToolWindow1Command Instance
+        public static ToolWindowCommand Instance
         {
             get;
             private set;
-        }
-
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider
-        {
-            get
-            {
-                return this.package;
-            }
         }
 
         /// <summary>
@@ -97,7 +61,7 @@ namespace VSIXProject1
             OleMenuCommandService commandService = await package.GetServiceAsync((typeof(IMenuCommandService))) as OleMenuCommandService;
             //var dataSourceFactory = await package.GetServiceAsync(typeof(SVsDataSourceFactory)) as IVsDataSourceFactory;
 
-            Instance = new ToolWindow1Command(package, commandService);
+            Instance = new ToolWindowCommand(package, commandService);
         }
 
         /// <summary>
@@ -105,11 +69,11 @@ namespace VSIXProject1
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void Execute(object sender, EventArgs e)
+        private void Execute()
         {
-            this.package.JoinableTaskFactory.RunAsync(async () =>
+            _package.JoinableTaskFactory.RunAsync(async () =>
             {
-                ToolWindowPane window = await this.package.ShowToolWindowAsync(typeof(ToolWindow1), 0, true, this.package.DisposalToken);
+                ToolWindowPane window = await _package.ShowToolWindowAsync(typeof(ToolWindow), 0, true, _package.DisposalToken);
                 if ((null == window) || (null == window.Frame))
                 {
                     throw new NotSupportedException("Cannot create tool window");

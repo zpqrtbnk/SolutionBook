@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace VSIXProject1.Services
+namespace SolutionBook.Services
 {
     // inspired: https://github.com/GrzegorzKozub/ClearRecent
 

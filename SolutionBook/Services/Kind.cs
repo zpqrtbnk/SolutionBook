@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VSIXProject1.Services
+namespace SolutionBook.Services
 {
     public enum Kind
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace VSIXProject1.Services
+namespace SolutionBook.Services
 {
     public class Types
     {

@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace VSIXProject1.Services
+namespace SolutionBook.Services
 {
     class Files
     {

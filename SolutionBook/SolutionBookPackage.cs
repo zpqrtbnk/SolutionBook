@@ -6,10 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using VSIXProject1.Services;
+using SolutionBook.Services;
 using Task = System.Threading.Tasks.Task;
 
-namespace VSIXProject1
+namespace SolutionBook
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
@@ -29,10 +29,10 @@ namespace VSIXProject1
     /// </para>
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [Guid(VSIXProject1Package.PackageGuidString)]
+    [Guid(SolutionBookPackage.PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [ProvideToolWindow(typeof(ToolWindow1))]
-    public sealed class VSIXProject1Package : AsyncPackage
+    [ProvideToolWindow(typeof(ToolWindow))]
+    public sealed class SolutionBookPackage : AsyncPackage
     {
         /// <summary>
         /// VSIXProject1Package GUID string.
@@ -53,17 +53,17 @@ namespace VSIXProject1
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-            await ToolWindow1Command.InitializeAsync(this);
+            await ToolWindowCommand.InitializeAsync(this);
         }
 
         public override IVsAsyncToolWindowFactory GetAsyncToolWindowFactory(Guid toolWindowType)
         {
-            return toolWindowType.Equals(Guid.Parse(ToolWindow1.WindowGuidString)) ? this : null;
+            return toolWindowType.Equals(Guid.Parse(ToolWindow.WindowGuidString)) ? this : null;
         }
 
         protected override string GetToolWindowTitle(Type toolWindowType, int id)
         {
-            return toolWindowType == typeof(ToolWindow1) ? ToolWindow1.Title : base.GetToolWindowTitle(toolWindowType, id);
+            return toolWindowType == typeof(ToolWindow) ? ToolWindow.Title : base.GetToolWindowTitle(toolWindowType, id);
         }
 
         protected override async Task<object> InitializeToolWindowAsync(Type toolWindowType, int id, CancellationToken cancellationToken)
@@ -76,14 +76,8 @@ namespace VSIXProject1
             var dataSourceFactory = await GetServiceAsync(typeof(SVsDataSourceFactory)) as IVsDataSourceFactory;
             //return Enumerable.Empty<FileMenuRecents.RecentProject>();
             var recents = new FileMenuRecents(null);
-            return new ToolWindowState { Projects = recents.GetRecentProjects(dataSourceFactory) };
+            return new ToolWindowState { RecentSolutions = recents.GetRecentProjects(dataSourceFactory) };
         }
-
-        //protected override WindowPane CreateToolWindow(Type toolWindowType, int id, object context)
-        //{
-        //    //return base.CreateToolWindow(toolWindowType, id, context);
-        //    return new ToolWindow1((IEnumerable<FileMenuRecents.RecentProject>) context);
-        //}
 
         #endregion
     }
