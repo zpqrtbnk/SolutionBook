@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -76,9 +78,11 @@ namespace SolutionBook
             var dataSourceFactory = await GetServiceAsync(typeof(SVsDataSourceFactory)) as IVsDataSourceFactory;
             var dte = await GetServiceAsync(typeof(DTE)) as DTE;
 
-            //return Enumerable.Empty<FileMenuRecents.RecentProject>();
+            //var xml = XDocument.Load(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SolutionBook.settings");
+            var settings = await SolutionBookSettings.LoadAsync();
+
             var recents = new FileMenuRecents(null);
-            return new ToolWindowState { RecentSolutions = recents.GetRecentProjects(dataSourceFactory), DTE = dte };
+            return new ToolWindowState { RecentSolutions = recents.GetRecentProjects(dataSourceFactory), Settings = settings, DTE = dte };
         }
 
         #endregion

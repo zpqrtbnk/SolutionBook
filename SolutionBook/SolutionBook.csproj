@@ -54,6 +54,7 @@
     <Compile Include="Services\Kind.cs" />
     <Compile Include="Services\Types.cs" />
     <Compile Include="BookItemType.cs" />
+    <Compile Include="SolutionBookSettings.cs" />
     <Compile Include="ToolWindow.cs" />
     <Compile Include="ToolWindowCommand.cs" />
     <Compile Include="ToolWindowControl.xaml.cs">
@@ -78,6 +79,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>

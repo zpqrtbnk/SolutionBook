@@ -3,6 +3,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.IO;
 using Microsoft.VisualStudio.Imaging;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace SolutionBook
 {
@@ -21,14 +23,14 @@ namespace SolutionBook
 
             _state = state;
 
-            BookItem childItem1 = new BookItem(null) { Header = "Child item #1", Type = BookItemType.Folder };
-            childItem1.Items.Add(new BookItem(childItem1) { Header = "Child item #1.1", Type = BookItemType.Solution, Path = "path1.1" });
-            childItem1.Items.Add(new BookItem(childItem1) { Header = "Child item #1.2", Type = BookItemType.Solution, Path = "path1.2" });
-            Book.Items.Add(childItem1);
-            Book.Items.Add(new BookItem(null) { Header = "Child item #2", Type = BookItemType.Solution, Path = "path2" });
+            //BookItem childItem1 = new BookItem(null) { Header = "Child item #1", Type = BookItemType.Folder };
+            //childItem1.Items.Add(new BookItem(childItem1) { Header = "Child item #1.1", Type = BookItemType.Solution, Path = "path1.1" });
+            //childItem1.Items.Add(new BookItem(childItem1) { Header = "Child item #1.2", Type = BookItemType.Solution, Path = "path1.2" });
+            //Book.Items.Add(childItem1);
+            //Book.Items.Add(new BookItem(null) { Header = "Child item #2", Type = BookItemType.Solution, Path = "path2" });
 
             var recentItems = new BookItem(null) { Header = "Recent", Type = BookItemType.Recents };
-            Book.Items.Insert(0, recentItems);
+            Book.Items.Add(recentItems);
 
             foreach (var recent in state.RecentSolutions)
             {
@@ -37,7 +39,38 @@ namespace SolutionBook
                 recentItems.Items.Add(new BookItem(recentItems) { Header = solutionName, Path = recent.Path, Type = BookItemType.Recent });
             }
 
+            foreach (var element in state.Settings.Elements)
+            {
+                if (element is SolutionBookSettings.Solution solution)
+                {
+                    Book.Items.Add(new BookItem(null) { Header = solution.Name, Path = solution.Path, Type = BookItemType.Solution });
+                }
+                else if (element is SolutionBookSettings.Folder folder)
+                {
+                    var folderItems = new BookItem(null) { Header = folder.Name, Type = BookItemType.Folder };
+                    Book.Items.Add(folderItems);
+                    Populate(folderItems, folder.Elements);
+                }
+            }
+
             OpenEnabler.Initialize(_state.DTE);
+        }
+
+        void Populate(BookItem bookItems, List<SolutionBookSettings.Element> elements)
+        {
+            foreach (var element in elements)
+            {
+                if (element is SolutionBookSettings.Solution solution)
+                {
+                    bookItems.Items.Add(new BookItem(bookItems) { Header = solution.Name, Path = solution.Path, Type = BookItemType.Solution });
+                }
+                else if (element is SolutionBookSettings.Folder folder)
+                {
+                    var folderItems = new BookItem(bookItems) { Header = folder.Name, Type = BookItemType.Folder };
+                    bookItems.Items.Add(folderItems);
+                    Populate(folderItems, folder.Elements);
+                }
+            }
         }
 
         public void Show()

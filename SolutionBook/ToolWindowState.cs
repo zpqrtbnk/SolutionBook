@@ -8,6 +8,8 @@ namespace SolutionBook
     {
         public IEnumerable<FileMenuRecents.RecentProject> RecentSolutions { get; set; }
 
+        public SolutionBookSettings Settings { get; set; }
+
         public DTE DTE { get; set; }
     }
 }
