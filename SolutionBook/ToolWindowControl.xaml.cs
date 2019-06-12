@@ -5,6 +5,7 @@ using System.IO;
 using Microsoft.VisualStudio.Imaging;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Win32;
 
 namespace SolutionBook
 {
@@ -172,7 +173,25 @@ namespace SolutionBook
             var treeItem = sender as MenuItem;
             var bookItem = treeItem.DataContext as BookItem;
 
-            bookItem.Items.Add(new BookItem(bookItem) { Type = BookItemType.Solution, Header = "(new solution)" });
+            var dialog = new OpenFileDialog
+            {
+                CheckFileExists = true,
+                CheckPathExists = true,
+                DefaultExt = ".sln",
+                Filter = @"Solution (*.sln)|*.sln"
+                         /*+ @"|All files (*.*)|*.*"*/,
+                AddExtension = true,
+                Multiselect = false,
+                ValidateNames = true,
+                Title = @"Browse for solution..."
+            };
+
+            var path = dialog.ShowDialog() == true
+                ? dialog.FileName
+                : null; 
+            
+            if (path != null)
+                bookItem.Items.Add(new BookItem(bookItem) { Type = BookItemType.Solution, Header = Path.GetFileNameWithoutExtension(path), Path = path });
         }
 
         private void Menu_RemoveFolder(object sender, RoutedEventArgs e)
