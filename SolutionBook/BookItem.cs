@@ -10,6 +10,7 @@ namespace SolutionBook
     {
         private bool _isExpanded;
         private bool _isEditing;
+        private string _header;
 
         public BookItem(BookItem parent)
         {
@@ -19,11 +20,24 @@ namespace SolutionBook
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        private void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
         public BookItem Parent { get; }
 
         public BookItemType Type { get; set; }
 
-        public string Header { get; set; }
+        public string Header
+        {
+            get => _header;
+            set
+            {
+                _header = value;
+                OnPropertyChanged(nameof(Header));
+            }
+        }
 
         public string Path { get; set; }
 
@@ -35,8 +49,8 @@ namespace SolutionBook
             set
             {
                 _isExpanded = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("IsExpanded"));
-                PropertyChanged(this, new PropertyChangedEventArgs("Icon"));
+                OnPropertyChanged(nameof(IsExpanded));
+                OnPropertyChanged(nameof(Icon));
             }
         }
 
@@ -46,7 +60,7 @@ namespace SolutionBook
             set
             {
                 _isEditing = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("IsEditing"));
+                OnPropertyChanged(nameof(IsEditing));
             }
         }
 

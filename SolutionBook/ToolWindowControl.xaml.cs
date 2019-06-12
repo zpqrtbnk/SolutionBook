@@ -8,6 +8,9 @@ namespace SolutionBook
 {
     public partial class ToolWindowControl : UserControl
     {
+        private string _editOrigin;
+        private BookItem _editItem;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindowControl"/> class.
         /// </summary>
@@ -31,6 +34,24 @@ namespace SolutionBook
                 var solutionName = Path.GetFileNameWithoutExtension(recent.Path);
                 recentItems.Items.Add(new BookItem(recentItems) { Header = solutionName, Path = recent.Path, Type = BookItemType.Recent });
             }
+        }
+
+        private void BeginEdit(BookItem bookItem)
+        {
+            _editItem = bookItem;
+            _editOrigin = bookItem.Header;
+            bookItem.IsEditing = true;
+        }
+
+        private void EndEdit(string value = null)
+        {
+            if (_editItem == null)
+                return;
+
+            _editItem.Header = string.IsNullOrWhiteSpace(value) ? _editOrigin : value;
+
+            _editItem.IsEditing = false;
+            _editItem = null;
         }
 
         private void BookItem_Expanded(object sender, RoutedEventArgs e)
@@ -62,7 +83,11 @@ namespace SolutionBook
             var treeItem = sender as MenuItem;
             var bookItem = treeItem.DataContext as BookItem;
 
-            System.Diagnostics.Debug.WriteLine($"Rename solution {bookItem.Header}");
+            // how can I select it?
+            //var viewItem = Book.ItemContainerGenerator.ContainerFromItem(treeItem) as TreeViewItem;
+            //viewItem.IsSelected = true;
+
+            BeginEdit(bookItem);
         }
 
         private void Menu_Refresh(object sender, RoutedEventArgs e)
@@ -150,6 +175,36 @@ namespace SolutionBook
             e.Handled = true;
 
             System.Diagnostics.Debug.WriteLine($"Open solution {bookItem.Header} as {bookItem.Path}");
+        }
+
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            //var bookItem = textBox.DataContext as BookItem;
+
+            //if (bookItem == null) return;
+
+            //textBox.Text = _editOrigin;
+            EndEdit();
+        }
+
+        private void TextBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            var bookItem = textBox.DataContext as BookItem;
+
+            switch (e.Key)
+            {
+                case Key.Escape:
+                    //textBox.Text = _editOrigin;
+                    EndEdit();
+                    e.Handled = true;
+                    break;
+                case Key.Return: // also .Enter
+                    EndEdit(textBox.Text);
+                    e.Handled = true;
+                    break;
+            }
         }
     }
 }
