@@ -66,16 +66,23 @@
                      Background="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowBackgroundBrushKey}}"
                      Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}">
 
-            <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}">
+            <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}" IsEnabled="{Binding Path=(local:OpenEnabler.IsEnabled)}">
                 <MenuItem.Icon>
                     <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Open}" />
                 </MenuItem.Icon>
             </MenuItem>
+            <MenuItem Header="Rename" Click="Menu_Rename" Style="{DynamicResource MenuItemStyle}">
+                <MenuItem.Icon >
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Rename}" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <!--
             <MenuItem Header="Properties" Click="Menu_Properties" Style="{DynamicResource MenuItemStyle}">
                 <MenuItem.Icon>
                     <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Property}" />
                 </MenuItem.Icon>
             </MenuItem>
+            -->
             <Separator />
             <MenuItem Header="Remove" Click="Menu_RemoveSolution" Style="{DynamicResource MenuItemStyle}">
                 <MenuItem.Icon>
@@ -126,7 +133,7 @@
                      Background="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowBackgroundBrushKey}}"
                      Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}">
 
-            <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}">
+            <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}" IsEnabled="{Binding Path=(local:OpenEnabler.IsEnabled)}">
                 <MenuItem.Icon>
                     <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Open}" />
                 </MenuItem.Icon>
@@ -144,7 +151,9 @@
                       Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}" 
                       BorderThickness="0"
                       ItemContainerStyle="{StaticResource TreeViewItemStyle}"                      
-                      PreviewMouseLeftButtonDown="Book_Mouse">
+                      PreviewMouseLeftButtonDown="Book_PreviewMouseLeftDown"
+                      PreviewMouseRightButtonDown="Book_PreviewMouseRightDown"
+                      KeyUp="Book_KeyUp">
 
                 <TreeView.Resources>
 
@@ -172,7 +181,8 @@
                             <TextBox Text="{Binding Header}" FontWeight="{Binding Weight}"
                                      Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}"
                                      Background="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowBackgroundBrushKey}}"
-                                     LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp" />
+                                     Loaded="TextBox_Loaded"
+                                     LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"  />
                         </StackPanel>
                     </DataTemplate>
 
@@ -180,9 +190,6 @@
                     <Style x:Key="PresenterStyle" TargetType="{x:Type ContentPresenter}">
                         <Setter Property="ContentTemplate" Value="{StaticResource ViewTemplate}" />
                         <Style.Triggers>
-                            <!-- 
-                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type TreeViewItem}}}" Value="True">
-                            -->
                             <DataTrigger Binding="{Binding IsEditing}" Value="True">
                                 <Setter Property="ContentTemplate" Value="{StaticResource EditTemplate}" />
                             </DataTrigger>
@@ -193,7 +200,7 @@
 
                 <!-- tree template -->
                 <TreeView.ItemTemplate >
-                    <HierarchicalDataTemplate DataType="{x:Type MenuItem}" ItemsSource="{Binding Items}" >
+                    <HierarchicalDataTemplate ItemsSource="{Binding Items}">
                         <ContentPresenter Content="{Binding}" Style="{StaticResource PresenterStyle}" />
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>

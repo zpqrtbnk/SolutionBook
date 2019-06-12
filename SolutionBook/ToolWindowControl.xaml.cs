@@ -10,6 +10,7 @@ namespace SolutionBook
     {
         private string _editOrigin;
         private BookItem _editItem;
+        private ToolWindowState _state;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindowControl"/> class.
@@ -18,12 +19,13 @@ namespace SolutionBook
         {
             InitializeComponent();
 
+            _state = state;
+
             BookItem childItem1 = new BookItem(null) { Header = "Child item #1", Type = BookItemType.Folder };
             childItem1.Items.Add(new BookItem(childItem1) { Header = "Child item #1.1", Type = BookItemType.Solution, Path = "path1.1" });
             childItem1.Items.Add(new BookItem(childItem1) { Header = "Child item #1.2", Type = BookItemType.Solution, Path = "path1.2" });
             Book.Items.Add(childItem1);
             Book.Items.Add(new BookItem(null) { Header = "Child item #2", Type = BookItemType.Solution, Path = "path2" });
-
 
             var recentItems = new BookItem(null) { Header = "Recent", Type = BookItemType.Recents };
             Book.Items.Insert(0, recentItems);
@@ -34,6 +36,19 @@ namespace SolutionBook
                 var solutionName = Path.GetFileNameWithoutExtension(recent.Path);
                 recentItems.Items.Add(new BookItem(recentItems) { Header = solutionName, Path = recent.Path, Type = BookItemType.Recent });
             }
+
+            OpenEnabler.Initialize(_state.DTE);
+        }
+
+        public void Show()
+        {
+            var bookItem = Book.SelectedItem as BookItem;
+            var treeViewItem = Book.ItemContainerGenerator.ContainerFromItem(bookItem) as TreeViewItem;
+            
+            if (treeViewItem == null) return;
+
+            treeViewItem.Focus();
+            Keyboard.Focus(treeViewItem);
         }
 
         private void BeginEdit(BookItem bookItem)
@@ -75,7 +90,13 @@ namespace SolutionBook
             var treeItem = sender as MenuItem;
             var bookItem = treeItem.DataContext as BookItem;
 
-            System.Diagnostics.Debug.WriteLine($"Open solution {bookItem.Header} as {bookItem.Path}");
+            //System.Diagnostics.Debug.WriteLine($"Open solution {bookItem.Header} as {bookItem.Path}");
+
+            if (_state.DTE.Solution.IsOpen)
+                return;
+
+            if (File.Exists(bookItem.Path))
+                _state.DTE.ExecuteCommand("File.OpenProject", $"\"{bookItem.Path}\"");
         }
 
         private void Menu_Rename(object sender, RoutedEventArgs e)
@@ -83,11 +104,10 @@ namespace SolutionBook
             var treeItem = sender as MenuItem;
             var bookItem = treeItem.DataContext as BookItem;
 
-            // how can I select it?
-            //var viewItem = Book.ItemContainerGenerator.ContainerFromItem(treeItem) as TreeViewItem;
-            //viewItem.IsSelected = true;
-
             BeginEdit(bookItem);
+
+            //var treeViewItem = Book.ItemContainerGenerator.ContainerFromItem(bookItem) as TreeViewItem;
+            //var textBox = treeViewItem.FindVisualChild<TextBox>();
         }
 
         private void Menu_Refresh(object sender, RoutedEventArgs e)
@@ -98,13 +118,13 @@ namespace SolutionBook
             System.Diagnostics.Debug.WriteLine($"Refresh {bookItem.Header}");
         }
 
-        private void Menu_Properties(object sender, RoutedEventArgs e)
-        {
-            var treeItem = sender as MenuItem;
-            var bookItem = treeItem.DataContext as BookItem;
+        //private void Menu_Properties(object sender, RoutedEventArgs e)
+        //{
+        //    var treeItem = sender as MenuItem;
+        //    var bookItem = treeItem.DataContext as BookItem;
 
-            System.Diagnostics.Debug.WriteLine($"Open solution {bookItem.Header} properties");
-        }
+        //    System.Diagnostics.Debug.WriteLine($"Open solution {bookItem.Header} properties");
+        //}
 
         private void Menu_AddFolder(object sender, RoutedEventArgs e)
         {
@@ -146,8 +166,11 @@ namespace SolutionBook
                 parentItem.Items.Remove(bookItem);
         }
 
-        private void Book_Mouse(object sender, MouseButtonEventArgs e)
+        private void Book_PreviewMouseLeftDown(object sender, MouseButtonEventArgs e)
         {
+            //System.Diagnostics.Debug.WriteLine("Focus: " + FocusManager.GetFocusedElement(Book));
+            //System.Diagnostics.Debug.WriteLine("Focus: " + Keyboard.FocusedElement);
+
             if (e.ClickCount <= 1)
                 return;
 
@@ -177,34 +200,86 @@ namespace SolutionBook
             System.Diagnostics.Debug.WriteLine($"Open solution {bookItem.Header} as {bookItem.Path}");
         }
 
+        private void Book_PreviewMouseRightDown(object sender, MouseButtonEventArgs e)
+        {
+            var treeViewItem = e.OriginalSource.VisualUpwardSearch<TreeViewItem>();
+            //var treeViewItem = VisualUpwardSearch<TreeViewItem>(e.OriginalSource as DependencyObject);
+
+            if (treeViewItem != null)
+            {
+                treeViewItem.IsSelected = true;
+                e.Handled = true;
+            }
+        }
+
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            var textBox = sender as TextBox;
+            //var textBox = sender as TextBox;
             //var bookItem = textBox.DataContext as BookItem;
 
-            //if (bookItem == null) return;
-
-            //textBox.Text = _editOrigin;
             EndEdit();
         }
 
         private void TextBox_KeyUp(object sender, KeyEventArgs e)
         {
             var textBox = sender as TextBox;
-            var bookItem = textBox.DataContext as BookItem;
+            //var bookItem = textBox.DataContext as BookItem;
+
+            TreeViewItem treeViewItem = null;
 
             switch (e.Key)
             {
                 case Key.Escape:
-                    //textBox.Text = _editOrigin;
+                    treeViewItem = textBox.VisualUpwardSearch<TreeViewItem>();
                     EndEdit();
-                    e.Handled = true;
                     break;
                 case Key.Return: // also .Enter
+                    treeViewItem = textBox.VisualUpwardSearch<TreeViewItem>();
                     EndEdit(textBox.Text);
-                    e.Handled = true;
                     break;
             }
+
+            if (treeViewItem != null)
+            {
+                e.Handled = true;
+                treeViewItem.Focus();
+                Keyboard.Focus(treeViewItem);
+            }
         }
+
+        private void Book_KeyUp(object sender, KeyEventArgs e)
+        {
+            // do nothing but somehow, without this, arrows etc don't work in the textbox?
+
+            if (e.Key == Key.F2)
+            {
+                var treeView = sender as TreeView;
+                var bookItem = treeView.SelectedItem as BookItem;
+
+                if (bookItem.Type == BookItemType.Folder || bookItem.Type == BookItemType.Solution)
+                    BeginEdit(bookItem);
+            }
+
+            //System.Diagnostics.Debug.WriteLine("Key: " + e.Key);
+            //System.Diagnostics.Debug.WriteLine("Focus: " + FocusManager.GetFocusedElement(Book));
+            //System.Diagnostics.Debug.WriteLine("Focus: " + Keyboard.FocusedElement);
+        }
+
+        private void TextBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+
+            textBox.SelectAll();
+            textBox.Focus();
+        }
+
+        // that one triggers, but is not enough: F2 is not handled by the treeview?!
+        // so... what has focus exactly?!
+        //private void TextBlock_Loaded(object sender, RoutedEventArgs e)
+        //{
+        //    var textBlock = sender as TextBlock;
+
+        //    textBlock.Focus();
+        //}
     }
 }

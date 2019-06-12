@@ -46,6 +46,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BookItem.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="OpenEnabler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\FileMenuRecents.cs" />
     <Compile Include="Services\Files.cs" />

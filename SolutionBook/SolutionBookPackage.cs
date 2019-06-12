@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using SolutionBook.Services;
@@ -73,10 +72,13 @@ namespace SolutionBook
             //return Task.FromResult((object) new ToolWindowState { Projects = Enumerable.Empty<FileMenuRecents.RecentProject>() });
 
             //return base.InitializeToolWindowAsync(toolWindowType, id, cancellationToken);
+
             var dataSourceFactory = await GetServiceAsync(typeof(SVsDataSourceFactory)) as IVsDataSourceFactory;
+            var dte = await GetServiceAsync(typeof(DTE)) as DTE;
+
             //return Enumerable.Empty<FileMenuRecents.RecentProject>();
             var recents = new FileMenuRecents(null);
-            return new ToolWindowState { RecentSolutions = recents.GetRecentProjects(dataSourceFactory) };
+            return new ToolWindowState { RecentSolutions = recents.GetRecentProjects(dataSourceFactory), DTE = dte };
         }
 
         #endregion
