@@ -18,6 +18,15 @@ namespace SolutionBook
             Parent = parent;
         }
 
+        public BookItem(BookItem parent, BookItem source)
+        {
+            Items = source.Items;
+            Parent = parent;
+            Type = source.Type;
+            Header = source.Header;
+            Path = source.Path;
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string name)

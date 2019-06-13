@@ -153,6 +153,9 @@
                       ItemContainerStyle="{StaticResource TreeViewItemStyle}"                      
                       PreviewMouseLeftButtonDown="Book_PreviewMouseLeftDown"
                       PreviewMouseRightButtonDown="Book_PreviewMouseRightDown"
+                      MouseDown="Book_MouseDown" MouseMove="Book_MouseMove"
+                      DragEnter="Book_ChkDrop" DragLeave="Book_ChkDrop" DragOver="Book_ChkDrop"
+                      Drop="Book_Drop"
                       KeyUp="Book_KeyUp">
 
                 <TreeView.Resources>

@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.Imaging;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Win32;
+using System;
+using System.Windows.Media;
 
 namespace SolutionBook
 {
@@ -325,13 +327,198 @@ namespace SolutionBook
             textBox.Focus();
         }
 
-        // that one triggers, but is not enough: F2 is not handled by the treeview?!
-        // so... what has focus exactly?!
-        //private void TextBlock_Loaded(object sender, RoutedEventArgs e)
-        //{
-        //    var textBlock = sender as TextBlock;
+        private Point _lastMouseDown;
+        private BookItem _sourceItem, _targetItem;
 
-        //    textBlock.Focus();
-        //}
+        private void Book_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                _lastMouseDown = e.GetPosition(Book);
+        }
+
+        private void Book_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            // Note: This should be based on some accessibility number and not just 2 pixels 
+            const double trigger = 2.0;
+            var currentPosition = e.GetPosition(Book);
+            var dx = Math.Abs(currentPosition.X - _lastMouseDown.X);
+            var dy = Math.Abs(currentPosition.Y - _lastMouseDown.Y);
+
+            if (dx <= trigger || dy <= trigger)
+                return;
+
+            // todo: cannot drag 'Recents' folder, anything else is ok
+            // todo: cannot drag folder to child?
+
+            var selectedItem = (BookItem) Book.SelectedItem;
+            if (selectedItem == null || !CanBeDragged(selectedItem))
+                return;
+
+            var container = GetContainerFromItem(selectedItem);
+            if (container != null)
+            {
+                _sourceItem = selectedItem;
+                var finalDropEffect = DragDrop.DoDragDrop(container, selectedItem, DragDropEffect);
+                DoDrop(finalDropEffect);
+                //if ((finalDropEffect == DragDropEffects.Move) && (_targetItem != null))
+                //{
+                //    // A Move drop was accepted 
+                //    selectedItem.Parent.Items.Remove(selectedItem);
+                //    _targetItem.Items.Add(selectedItem);
+                //    _targetItem = null;
+                //    _sourceItem = null;
+                //}
+            }
+        }
+
+        private void DoDrop(DragDropEffects effect)
+        {
+            if (_targetItem == null)
+                return;
+
+            if (effect == DragDropEffects.Move)
+                _sourceItem.Parent.Items.Remove(_sourceItem);
+
+            if (effect == DragDropEffects.Move || effect == DragDropEffects.Copy)
+            {
+                var newType = _sourceItem.Type == BookItemType.Recent ? BookItemType.Solution : _sourceItem.Type;
+                var newItem = new BookItem(_targetItem, _sourceItem) { Type = newType };
+                _targetItem.Items.Add(newItem);
+            }
+
+            _targetItem = null;
+            _sourceItem = null;
+        }
+
+        private DragDropEffects DragDropEffect
+        {
+            get
+            {
+                if (_sourceItem == null)
+                    return DragDropEffects.None;
+
+                // recent items are copied, not moved
+                return _sourceItem.Type == BookItemType.Recent ? DragDropEffects.Copy : DragDropEffects.Move;
+            }
+        }
+
+        private void Book_ChkDrop(object sender, DragEventArgs e)
+        {
+            if (!IsValidDropTarget(e.OriginalSource as UIElement))
+                e.Effects = DragDropEffects.None;
+            e.Handled = true;
+        }
+
+        private void Book_Drop(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+
+            // Verify that this is a valid drop and then store the drop target 
+            var container = GetNearestContainer(e.OriginalSource as UIElement);
+            if (container == null)
+                return;
+
+            var source = (BookItem) e.Data.GetData(typeof(BookItem));
+            var target = (BookItem) container.Header;
+            if (source == null || target == null)
+                return;
+
+            // assume checks have been performed
+            // assume source is _sourceItem
+
+            _targetItem = target;
+            e.Effects = DragDropEffect;
+        }
+
+        private bool IsDescendant(BookItem item, BookItem parent)
+        {
+            while (item != null)
+            {
+                if (item.Parent == parent) return true;
+                item = item.Parent;
+            }
+            return false;
+        }
+
+        private bool CanBeDragged(BookItem bookItem)
+        {
+            if (bookItem == null)
+                return false;
+
+            // that one does not move
+            return bookItem.Type != BookItemType.Recents;
+        }
+
+        private bool IsValidDropTarget(UIElement target)
+        {
+            if (target == null) return false;
+
+            var targetTreeViewItem = GetNearestContainer(target);
+            if (targetTreeViewItem == null) return false;
+
+            var targetBookItem = targetTreeViewItem.Header as BookItem;
+            if (targetBookItem == null) return false;
+
+            return IsValidDropTarget(targetBookItem, _sourceItem);
+        }
+
+        private bool IsValidDropTarget(BookItem target, BookItem dragging)
+        {            
+            // cannot drop onto recents
+            if (target.Type == BookItemType.Recents)
+                return false;
+
+            // drop on folder only, for now
+            if (target.Type != BookItemType.Folder)
+                return false;
+
+            // has to be ok folder
+            if (target == dragging || target == dragging.Parent)
+                return false;
+
+            if (IsDescendant(target, dragging))
+                return false;
+
+            return true;
+        }
+
+        private TreeViewItem GetContainerFromItem(BookItem item)
+        {
+            var _stack = new Stack<BookItem>();
+            _stack.Push(item);
+            var parent = item.Parent;
+
+            while (parent != null)
+            {
+                _stack.Push(parent);
+                parent = parent.Parent;
+            }
+
+            ItemsControl container = Book;
+            while ((_stack.Count > 0) && (container != null))
+            {
+                BookItem top = _stack.Pop();
+                container = (ItemsControl)container.ItemContainerGenerator.ContainerFromItem(top);
+            }
+
+            return container as TreeViewItem;
+        }
+
+        private TreeViewItem GetNearestContainer(UIElement element)
+        {
+            // Walk up the element tree to the nearest tree view item. 
+            var container = element as TreeViewItem;
+            while ((container == null) && (element != null))
+            {
+                element = VisualTreeHelper.GetParent(element) as UIElement;
+                container = element as TreeViewItem;
+            }
+
+            return container;
+        }
     }
 }
