@@ -143,7 +143,7 @@
     </UserControl.Resources>
 
     <Grid>
-        <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" LastChildFill="False">
 
             <TreeView Height="Auto" Name="Book" VerticalAlignment="Stretch" DockPanel.Dock="Top" 
                       TreeViewItem.Expanded="BookItem_Expanded" TreeViewItem.Collapsed="BookItem_Collapsed"
@@ -202,14 +202,22 @@
                 </TreeView.Resources>
 
                 <!-- tree template -->
-                <TreeView.ItemTemplate >
+                <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding Items}">
-                        <ContentPresenter Content="{Binding}" Style="{StaticResource PresenterStyle}" />
+                        <ContentPresenter Content="{Binding}" Style="{StaticResource PresenterStyle}" ToolTip="{Binding Path}"
+                                          MouseEnter="ContentPresenter_MouseEnter"
+                                          MouseLeave="ContentPresenter_MouseLeave"/>
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
 
             </TreeView>
 
+            <TextBlock Name="Infos" Text="" 
+                       Height="16" Padding="4,0,4,0"
+                       DockPanel.Dock="Bottom"
+                       Background="Transparent"
+                       Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}" />
+            
         </DockPanel>
     </Grid>
 </UserControl>

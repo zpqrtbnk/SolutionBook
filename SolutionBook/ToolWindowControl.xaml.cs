@@ -363,14 +363,6 @@ namespace SolutionBook
                 _sourceItem = selectedItem;
                 var finalDropEffect = DragDrop.DoDragDrop(container, selectedItem, DragDropEffect);
                 DoDrop(finalDropEffect);
-                //if ((finalDropEffect == DragDropEffects.Move) && (_targetItem != null))
-                //{
-                //    // A Move drop was accepted 
-                //    selectedItem.Parent.Items.Remove(selectedItem);
-                //    _targetItem.Items.Add(selectedItem);
-                //    _targetItem = null;
-                //    _sourceItem = null;
-                //}
             }
         }
 
@@ -506,6 +498,33 @@ namespace SolutionBook
             }
 
             return container as TreeViewItem;
+        }
+
+        private void ContentPresenter_MouseEnter(object sender, MouseEventArgs e)
+        {
+            // disabled for now
+
+            //var presenter = sender as ContentPresenter;
+            //var bookItem = presenter.Content as BookItem;
+
+            //switch (bookItem.Type)
+            //{
+            //    case BookItemType.Folder:
+            //    case BookItemType.Recents:
+            //        Infos.Text = "";
+            //        break;
+            //    case BookItemType.Solution:
+            //    case BookItemType.Recent:
+            //        Infos.Text = bookItem.Path;
+            //        break;
+            //}
+        }
+
+        private void ContentPresenter_MouseLeave(object sender, MouseEventArgs e)
+        {
+            // disabled for now
+
+            Infos.Text = "";
         }
 
         private TreeViewItem GetNearestContainer(UIElement element)
