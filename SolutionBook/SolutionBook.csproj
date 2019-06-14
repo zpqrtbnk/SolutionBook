@@ -46,6 +46,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BookItem.cs" />
+    <Compile Include="DragDropAdorner.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="OpenEnabler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -62,6 +63,7 @@
     </Compile>
     <Compile Include="ToolWindowState.cs" />
     <Compile Include="SolutionBookPackage.cs" />
+    <Compile Include="UiColors.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">

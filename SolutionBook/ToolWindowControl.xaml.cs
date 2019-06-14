@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Win32;
 using System;
 using System.Windows.Media;
+using System.Windows.Documents;
 
 namespace SolutionBook
 {
@@ -329,6 +330,7 @@ namespace SolutionBook
 
         private Point _lastMouseDown;
         private BookItem _sourceItem, _targetItem;
+        private int _targetRelative;
 
         private void Book_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -362,6 +364,7 @@ namespace SolutionBook
             {
                 _sourceItem = selectedItem;
                 var finalDropEffect = DragDrop.DoDragDrop(container, selectedItem, DragDropEffect);
+                ClearAdorner();
                 DoDrop(finalDropEffect);
             }
         }
@@ -372,16 +375,38 @@ namespace SolutionBook
                 return;
 
             if (effect == DragDropEffects.Move)
-                _sourceItem.Parent.Items.Remove(_sourceItem);
+            {
+                if (_sourceItem.Parent == null)
+                    Book.Items.Remove(_sourceItem);
+                else
+                    _sourceItem.Parent.Items.Remove(_sourceItem);
+            }
+
+            int index = _targetItem.Parent == null
+                ? Book.Items.IndexOf(_targetItem)
+                : _targetItem.Parent.Items.IndexOf(_targetItem);
 
             if (effect == DragDropEffects.Move || effect == DragDropEffects.Copy)
             {
                 var newType = _sourceItem.Type == BookItemType.Recent ? BookItemType.Solution : _sourceItem.Type;
                 var newItem = new BookItem(_targetItem, _sourceItem) { Type = newType };
-                _targetItem.Items.Add(newItem);
+
+                if (_targetRelative == 0)
+                {
+                    _targetItem.Items.Add(newItem);
+                }
+                else
+                {
+                    if (_targetRelative > 0) index += 1;
+                    if (_targetItem.Parent == null)
+                        Book.Items.Insert(index, newItem);
+                    else
+                        _targetItem.Parent.Items.Insert(index, newItem);
+                }
             }
 
             _targetItem = null;
+            _targetRelative = 0;
             _sourceItem = null;
         }
 
@@ -397,11 +422,143 @@ namespace SolutionBook
             }
         }
 
+        private AdornerLayer _adornerLayer;
+        private DragDropAdorner _adorner;
+        private TreeViewItem _adorned;
+
+        private void ClearAdorner()
+        {
+            if (_adorner != null)
+            {
+                _adornerLayer.Remove(_adorner);
+                _adornerLayer = null;
+                _adorner = null;
+            }
+
+            if (_adorned != null)
+            {
+                _adorned.Background = DragDropAdorner.Transparent;
+                _adorned = null;
+            }
+        }
+
+        private int GetRelative(TreeViewItem treeViewItem, DragEventArgs e)
+        {
+            var pos = e.GetPosition(treeViewItem).Y;
+            var height = treeViewItem.ActualHeight;
+
+            var targetBookItem = treeViewItem.Header as BookItem;
+            if (targetBookItem == null) return 0;
+
+            var a = 0;
+            switch (targetBookItem.Type)
+            {
+                case BookItemType.Folder:
+                    if (pos < height / 3) a = -1;
+                    if (pos >= 2 * height / 3) a = +1;
+                    break;
+                case BookItemType.Solution:
+                    if (pos < height / 2) a = -1;
+                    if (pos >= height / 2) a = +1;
+                    break;
+
+                    // cannot drop on Recents nor Recent
+            }
+
+            return a;
+        }
+
         private void Book_ChkDrop(object sender, DragEventArgs e)
         {
-            if (!IsValidDropTarget(e.OriginalSource as UIElement))
-                e.Effects = DragDropEffects.None;
             e.Handled = true;
+
+            var target = e.OriginalSource as UIElement;
+            var targetTreeViewItem = target == null ? null : GetNearestContainer(target);
+            var targetBookItem = targetTreeViewItem == null ? null : targetTreeViewItem.Header as BookItem;
+
+            //var tvi2 = target == null ? null : target.VisualUpwardSearch<TreeViewItem>();
+            var relative = targetTreeViewItem == null ? 0 : GetRelative(targetTreeViewItem, e);
+
+            if (targetBookItem == null || targetBookItem == _sourceItem || !IsValidDropTarget(targetBookItem, relative))
+            {
+                //System.Diagnostics.Debug.WriteLine("XX: " + e.OriginalSource + " " + tvi2);
+                e.Effects = DragDropEffects.None;
+                ClearAdorner();
+                return;
+            }
+
+            //System.Diagnostics.Debug.WriteLine("AA: " + e.OriginalSource + " " + pos + " " + height + " " + a);
+
+            if (targetTreeViewItem == _adorned && _adorner != null)
+            { 
+                if (relative == 0)
+                {
+                    ClearAdorner();
+                    targetTreeViewItem.Background = DragDropAdorner.Brush;
+                }
+                else
+                {
+                    _adorner.UpdatePosition(relative);
+                    _adornerLayer.Update();
+                }
+            }
+            else
+            {
+                ClearAdorner();
+                _adorned = targetTreeViewItem;
+
+                if (relative != 0)
+                {
+                    _adornerLayer = AdornerLayer.GetAdornerLayer(_adorned);
+                    _adorner = new DragDropAdorner(_adorned, relative, GetWidth(targetBookItem, targetTreeViewItem, relative));
+                    _adornerLayer.Add(_adorner);
+                }
+                else
+                {
+                    targetTreeViewItem.Background = DragDropAdorner.Brush;
+                }
+            }
+        }
+
+        private double GetWidth(BookItem target, TreeViewItem targetViewItem, int relative)
+        {
+            var index = target.Parent == null 
+                ? Book.Items.IndexOf(target)
+                : target.Parent.Items.IndexOf(target);
+
+            if (index < 0)
+                throw new Exception("panic");
+
+            index += relative;
+            if (index < 0) index++;
+            var count = target.Parent == null ? Book.Items.Count : target.Parent.Items.Count;
+            if (index == count) index--;
+
+            if (index < 0)
+                throw new Exception("panic");
+
+            var other = target.Parent == null
+                ? Book.Items[index] as BookItem
+                : target.Parent.Items[index];
+
+            System.Diagnostics.Debug.WriteLine("W: " + target.Header + " - " + other.Header);
+
+            var targetPresenter = GetPresenter(targetViewItem);
+            var otherViewItem = GetContainerFromItem(other) as TreeViewItem;
+            var otherPresenter = GetPresenter(otherViewItem);
+
+            var offset = targetPresenter.TranslatePoint(new Point(0, 0), targetViewItem).X;
+
+            return offset + Math.Max(otherPresenter.DesiredSize.Width, targetPresenter.DesiredSize.Width);
+        }
+
+        private ContentPresenter GetPresenter(TreeViewItem treeViewItem)
+        {
+            var grid = VisualTreeHelper.GetChild(treeViewItem, 0);
+            var border = VisualTreeHelper.GetChild(grid, 1);
+            var contentPresenter = VisualTreeHelper.GetChild(border, 0);
+
+            return contentPresenter as ContentPresenter;
         }
 
         private void Book_Drop(object sender, DragEventArgs e)
@@ -422,6 +579,7 @@ namespace SolutionBook
             // assume checks have been performed
             // assume source is _sourceItem
 
+            _targetRelative = GetRelative(container, e);
             _targetItem = target;
             e.Effects = DragDropEffect;
         }
@@ -445,37 +603,55 @@ namespace SolutionBook
             return bookItem.Type != BookItemType.Recents;
         }
 
-        private bool IsValidDropTarget(UIElement target)
+        //private bool IsValidDropTarget(UIElement target)
+        //{
+        //    if (target == null) return false;
+
+        //    var targetTreeViewItem = GetNearestContainer(target);
+        //    if (targetTreeViewItem == null) return false;
+
+        //    var targetBookItem = targetTreeViewItem.Header as BookItem;
+        //    if (targetBookItem == null) return false;
+
+        //    return IsValidDropTarget(targetBookItem, _sourceItem);
+        //}
+
+        private bool IsValidDropTarget(BookItem target, int relative/*, BookItem dragging*/)
         {
-            if (target == null) return false;
+            var dragging = _sourceItem;
 
-            var targetTreeViewItem = GetNearestContainer(target);
-            if (targetTreeViewItem == null) return false;
+            switch (target.Type)
+            {
+                // cannot drop onto recents
+                case BookItemType.Recents:
+                case BookItemType.Recent:
+                    return false;
 
-            var targetBookItem = targetTreeViewItem.Header as BookItem;
-            if (targetBookItem == null) return false;
+                case BookItemType.Solution:
+                    // always, whatever the value of relative
+                    return target != dragging && !IsDescendant(target, dragging) && !IsCloseSibling(target, dragging, relative);
 
-            return IsValidDropTarget(targetBookItem, _sourceItem);
+                case BookItemType.Folder:
+                    if (target == dragging || IsDescendant(target, dragging)) return false;
+                    if (target == dragging.Parent) return relative < 0; // not ON parent but before
+                    return true;
+                    //return target != dragging && target != dragging.Parent && !IsDescendant(target, dragging);
+            }
+
+            return false;
         }
 
-        private bool IsValidDropTarget(BookItem target, BookItem dragging)
-        {            
-            // cannot drop onto recents
-            if (target.Type == BookItemType.Recents)
-                return false;
+        private bool IsCloseSibling(BookItem target, BookItem dragging, int relative)
+        {
+            if (relative == 0) return false;
+            var targetIndex = GetItemIndex(target);
+            var draggingIndex = GetItemIndex(dragging);
+            return targetIndex == draggingIndex + relative;
+        }
 
-            // drop on folder only, for now
-            if (target.Type != BookItemType.Folder)
-                return false;
-
-            // has to be ok folder
-            if (target == dragging || target == dragging.Parent)
-                return false;
-
-            if (IsDescendant(target, dragging))
-                return false;
-
-            return true;
+        private int GetItemIndex(BookItem item)
+        {
+            return item.Parent == null ? Book.Items.IndexOf(item) : item.Parent.Items.IndexOf(item);
         }
 
         private TreeViewItem GetContainerFromItem(BookItem item)
@@ -525,6 +701,36 @@ namespace SolutionBook
             // disabled for now
 
             Infos.Text = "";
+        }
+
+        private void AddRootFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Book.Items.Add(new BookItem(null) { Type = BookItemType.Folder, Header = "(new folder)" });
+        }
+
+        private void AddRootSolution_Click(object sender, RoutedEventArgs e)
+        {
+            // fixme DRY
+
+            var dialog = new OpenFileDialog
+            {
+                CheckFileExists = true,
+                CheckPathExists = true,
+                DefaultExt = ".sln",
+                Filter = @"Solution (*.sln)|*.sln"
+             /*+ @"|All files (*.*)|*.*"*/,
+                AddExtension = true,
+                Multiselect = false,
+                ValidateNames = true,
+                Title = @"Browse for solution..."
+            };
+
+            var path = dialog.ShowDialog() == true
+                ? dialog.FileName
+                : null;
+
+            if (path != null)
+                Book.Items.Add(new BookItem(null) { Type = BookItemType.Solution, Header = Path.GetFileNameWithoutExtension(path), Path = path });
         }
 
         private TreeViewItem GetNearestContainer(UIElement element)

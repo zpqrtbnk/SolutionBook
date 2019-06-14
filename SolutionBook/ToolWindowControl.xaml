@@ -20,7 +20,7 @@
 
         <!-- tree item style -->
         <Style x:Key="TreeViewItemStyle" TargetType="TreeViewItem">
-            <Setter Property="Margin" Value="1 2 1 2" />
+            <Setter Property="Padding" Value="1 2 1 2" />
         </Style>
 
         <!-- context menu style = switcher -->
@@ -44,6 +44,8 @@
         <Style x:Key="ContextMenuStyle" TargetType="{x:Type ContextMenu}">
             <Setter Property="OverridesDefaultStyle" Value="True" />
             <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static local:UiColors.ToolWindowBackground}}" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static local:UiColors.ToolWindowText}}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ContextMenu}">
@@ -62,9 +64,15 @@
             <Setter Property="Margin" Value="0 2 0 2" />
         </Style>
 
-        <ContextMenu x:Key="SolutionContextMenu" Style="{DynamicResource ContextMenuStyle}"
-                     Background="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowBackgroundBrushKey}}"
-                     Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}">
+        <Style x:Key="ToolBarButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Margin" Value="4,4,4,4" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static local:UiColors.ToolWindowText}}" />
+            <!-- fixme hover color? -->
+        </Style>
+
+        <ContextMenu x:Key="SolutionContextMenu" Style="{DynamicResource ContextMenuStyle}">
 
             <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}" IsEnabled="{Binding Path=(local:OpenEnabler.IsEnabled)}">
                 <MenuItem.Icon>
@@ -91,9 +99,7 @@
             </MenuItem>
         </ContextMenu>
 
-        <ContextMenu x:Key="FolderContextMenu" Style="{DynamicResource ContextMenuStyle}"
-                     Background="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowBackgroundBrushKey}}"
-                     Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}">
+        <ContextMenu x:Key="FolderContextMenu" Style="{DynamicResource ContextMenuStyle}">
 
             <MenuItem Header="Rename" Click="Menu_Rename" Style="{DynamicResource MenuItemStyle}">
                 <MenuItem.Icon >
@@ -118,9 +124,7 @@
             </MenuItem>
         </ContextMenu>
 
-        <ContextMenu x:Key="RecentsContextMenu" Style="{DynamicResource ContextMenuStyle}"
-                     Background="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowBackgroundBrushKey}}"
-                     Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}">
+        <ContextMenu x:Key="RecentsContextMenu" Style="{DynamicResource ContextMenuStyle}">
 
             <MenuItem Header="Refresh" Click="Menu_Refresh" Style="{DynamicResource MenuItemStyle}">
                 <MenuItem.Icon>
@@ -129,9 +133,7 @@
             </MenuItem>
         </ContextMenu>
 
-        <ContextMenu x:Key="RecentContextMenu" Style="{DynamicResource ContextMenuStyle}"
-                     Background="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowBackgroundBrushKey}}"
-                     Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}">
+        <ContextMenu x:Key="RecentContextMenu" Style="{DynamicResource ContextMenuStyle}">
 
             <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}" IsEnabled="{Binding Path=(local:OpenEnabler.IsEnabled)}">
                 <MenuItem.Icon>
@@ -140,16 +142,39 @@
             </MenuItem>
         </ContextMenu>
 
+        <Style x:Key="TreeViewStyle" TargetType="{x:Type TreeView}">
+            <Setter Property="Background" Value="{DynamicResource {x:Static local:UiColors.ToolWindowBackground}}" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static local:UiColors.ToolWindowText}}" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style x:Key="ToolBarStyle" TargetType="{x:Type StackPanel}">
+            <Setter Property="Background" Value="{DynamicResource {x:Static local:UiColors.ToolBarBackground}}" />
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="DockPanel.Dock" Value="Top" />
+        </Style>               
+
     </UserControl.Resources>
 
     <Grid>
         <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" LastChildFill="False">
 
+            <StackPanel Style="{DynamicResource ToolBarStyle}">
+                <StackPanel.Resources>
+                    <Style BasedOn="{StaticResource ToolBarButtonStyle}" TargetType="{x:Type Button}" />
+                </StackPanel.Resources>
+                <Button Name="AddRootFolder" ToolTip="Add Root Folder" Click="AddRootFolder_Click" >
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.AddFolder}"/>
+                </Button>
+                <Button Name="AddRootSolution" ToolTip="Add Root Solution" Click="AddRootSolution_Click" >
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.AddScreen}"/>
+                </Button>
+            </StackPanel>
+            
             <TreeView Height="Auto" Name="Book" VerticalAlignment="Stretch" DockPanel.Dock="Top" 
                       TreeViewItem.Expanded="BookItem_Expanded" TreeViewItem.Collapsed="BookItem_Collapsed"
-                      Background="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowBackgroundBrushKey}}"
-                      Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}" 
-                      BorderThickness="0"
+                      Style="{DynamicResource TreeViewStyle}"
                       ItemContainerStyle="{StaticResource TreeViewItemStyle}"                      
                       PreviewMouseLeftButtonDown="Book_PreviewMouseLeftDown"
                       PreviewMouseRightButtonDown="Book_PreviewMouseRightDown"
@@ -212,6 +237,11 @@
 
             </TreeView>
 
+            <StatusBar Name="Infos2"
+                       DockPanel.Dock="Bottom"
+                       Background="Pink"
+                       Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}"/>
+            
             <TextBlock Name="Infos" Text="" 
                        Height="16" Padding="4,0,4,0"
                        DockPanel.Dock="Bottom"
