@@ -153,7 +153,39 @@
             <Setter Property="Orientation" Value="Horizontal" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="DockPanel.Dock" Value="Top" />
-        </Style>               
+        </Style>
+        
+        <!--
+            https://stackoverflow.com/questions/17259280/how-do-you-change-background-for-a-button-mouseover-in-wpf
+            (just to change the hover color...)
+        -->
+        <ControlTemplate x:Key="ToolBarButtonTemplate" TargetType="{x:Type ButtonBase}">
+            <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="Button.IsDefaulted" Value="True">
+                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" TargetName="border" Value="{DynamicResource {x:Static local:UiColors.ToolBarHover}}"/> <!-- #FFBEE6FD -->
+                    <Setter Property="BorderBrush" TargetName="border" Value="#FF3C7FB1"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" TargetName="border" Value="{DynamicResource {x:Static local:UiColors.ToolBarHover}}"/> <!-- #FFC4E5F6 -->
+                    <Setter Property="BorderBrush" TargetName="border" Value="#FF2C628B"/>
+                </Trigger>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter Property="Background" TargetName="border" Value="#FFBCDDEE"/>
+                    <Setter Property="BorderBrush" TargetName="border" Value="#FF245A83"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" TargetName="border" Value="#FFF4F4F4"/>
+                    <Setter Property="BorderBrush" TargetName="border" Value="#FFADB2B5"/>
+                    <Setter Property="Foreground" Value="#FF838383"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
 
     </UserControl.Resources>
 
@@ -164,14 +196,14 @@
                 <StackPanel.Resources>
                     <Style BasedOn="{StaticResource ToolBarButtonStyle}" TargetType="{x:Type Button}" />
                 </StackPanel.Resources>
-                <Button Name="AddRootFolder" ToolTip="Add Root Folder" Click="AddRootFolder_Click" >
+                <Button Name="AddRootFolder" ToolTip="Add Root Folder" Click="AddRootFolder_Click" Template="{DynamicResource ToolBarButtonTemplate}">
                     <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.AddFolder}"/>
                 </Button>
-                <Button Name="AddRootSolution" ToolTip="Add Root Solution" Click="AddRootSolution_Click" >
+                <Button Name="AddRootSolution" ToolTip="Add Root Solution" Click="AddRootSolution_Click" Template="{DynamicResource ToolBarButtonTemplate}">
                     <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.AddScreen}"/>
                 </Button>
             </StackPanel>
-            
+
             <TreeView Height="Auto" Name="Book" VerticalAlignment="Stretch" DockPanel.Dock="Top" 
                       TreeViewItem.Expanded="BookItem_Expanded" TreeViewItem.Collapsed="BookItem_Collapsed"
                       Style="{DynamicResource TreeViewStyle}"
@@ -241,13 +273,13 @@
                        DockPanel.Dock="Bottom"
                        Background="Pink"
                        Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}"/>
-            
+
             <TextBlock Name="Infos" Text="" 
                        Height="16" Padding="4,0,4,0"
                        DockPanel.Dock="Bottom"
                        Background="Transparent"
                        Foreground="{DynamicResource {x:Static vsui:EnvironmentColors.ToolWindowTextBrushKey}}" />
-            
+
         </DockPanel>
     </Grid>
 </UserControl>

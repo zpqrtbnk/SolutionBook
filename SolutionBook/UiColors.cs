@@ -10,5 +10,7 @@ namespace SolutionBook
         public static ThemeResourceKey ToolWindowText => EnvironmentColors.ToolWindowTextBrushKey;
 
         public static object ToolBarBackground => VsBrushes.CommandBarGradientKey;
+
+        public static object ToolBarHover => VsBrushes.CommandBarHoverKey;
     }
 }
