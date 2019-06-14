@@ -3,9 +3,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.Imaging;
+using System.Diagnostics;
 
 namespace SolutionBook
 {
+    [DebuggerDisplay("{{Type}:{Header}}")]
     public class BookItem : INotifyPropertyChanged
     {
         private bool _isExpanded;

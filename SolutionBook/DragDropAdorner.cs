@@ -35,9 +35,10 @@ namespace SolutionBook
             drawingContext.DrawLine(Pen, start, end);
         }
 
-        public void UpdatePosition(int pos)
+        public void UpdatePosition(int pos, double width)
         {
             _pos = pos;
+            _width = width;
         }
     }
 }

@@ -445,7 +445,9 @@ namespace SolutionBook
         private int GetRelative(TreeViewItem treeViewItem, DragEventArgs e)
         {
             var pos = e.GetPosition(treeViewItem).Y;
-            var height = treeViewItem.ActualHeight;
+            var presenter = GetPresenter(treeViewItem);
+            //var height = treeViewItem.ActualHeight;
+            var height = presenter.ActualHeight;
 
             var targetBookItem = treeViewItem.Header as BookItem;
             if (targetBookItem == null) return 0;
@@ -498,7 +500,7 @@ namespace SolutionBook
                 }
                 else
                 {
-                    _adorner.UpdatePosition(relative);
+                    _adorner.UpdatePosition(relative, GetWidth(targetBookItem, targetTreeViewItem, relative));
                     _adornerLayer.Update();
                 }
             }
@@ -644,9 +646,11 @@ namespace SolutionBook
         private bool IsCloseSibling(BookItem target, BookItem dragging, int relative)
         {
             if (relative == 0) return false;
+            if (target.Parent != dragging.Parent) return false;
+
             var targetIndex = GetItemIndex(target);
             var draggingIndex = GetItemIndex(dragging);
-            return targetIndex == draggingIndex + relative;
+            return draggingIndex == targetIndex + relative;
         }
 
         private int GetItemIndex(BookItem item)
