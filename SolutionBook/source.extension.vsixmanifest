@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" ?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="SolutionBook.f49fdd3f-4c12-4d5c-81a0-741735459abf" Version="1.0" Language="en-US" Publisher="Stéphane Gay" />
+        <Identity Id="SolutionBook.f49fdd3f-4c12-4d5c-81a0-741735459abf" Version="1.0.0" Language="en-US" Publisher="Stéphane Gay" />
         <DisplayName>SolutionBook</DisplayName>
-        <Description xml:space="preserve">SolutionBook</Description>
+        <Description xml:space="preserve">Solution Book for Visual Studio 2019</Description>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />

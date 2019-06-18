@@ -3,12 +3,27 @@ using System.Windows.Media;
 
 namespace SolutionBook
 {
+    /// <summary>
+    /// Provides Extension Methods.
+    /// </summary>
     public static class Extensions
     {
+        /// <summary>
+        /// Search the visual tree upward for an item of a given type.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="source">The starting point.</param>
+        /// <returns>The item, or <c>null</c>.</returns>
         public static T VisualUpwardSearch<T>(this object source)
             where T : DependencyObject
             => (source as DependencyObject).VisualUpwardSearch<T>();
 
+        /// <summary>
+        /// Search the visual tree upward for an item of a given type.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="source">The starting point.</param>
+        /// <returns>The item, or <c>null</c>.</returns>
         public static T VisualUpwardSearch<T>(this DependencyObject source)
             where T : DependencyObject
         {
@@ -33,7 +48,13 @@ namespace SolutionBook
             return returnVal as T;
         }
 
-        public static T FindVisualChild<T>(this DependencyObject obj) 
+        /// <summary>
+        /// Search the visual tree downward for an item of a give type.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="source">The starting point.</param>
+        /// <returns>The item, or <c>null</c>.</returns>
+        public static T VisualDownwardSearch<T>(this DependencyObject obj) 
             where T : DependencyObject
         {
             // see: https://stackoverflow.com/questions/26827916/how-to-get-the-child-control-inside-a-treeviewitem
@@ -45,7 +66,7 @@ namespace SolutionBook
                     var child = VisualTreeHelper.GetChild(obj, i);
                     if (child is T) return (T)child;
 
-                    var childItem = FindVisualChild<T>(child);
+                    var childItem = VisualDownwardSearch<T>(child);
                     if (childItem != null) return childItem;
                 }
             }
