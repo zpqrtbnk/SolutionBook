@@ -10,7 +10,7 @@ namespace SolutionBook
     /// <summary>
     /// Represents a solution book item.
     /// </summary>
-    [DebuggerDisplay("{{Type}:{Header}}")]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class BookItem : INotifyPropertyChanged
     {
         private bool _isExpanded;
@@ -42,6 +42,26 @@ namespace SolutionBook
         public BookItem(BookItem parent, BookItemType type, string path = null)
             : this(parent, type, path, new ObservableCollection<BookItem>())
         { }
+
+        private string DebuggerDisplay
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case BookItemType.Recents:
+                        return "Recents";
+                    case BookItemType.Folder:
+                        return "{Folder:" + Header + "}";
+                    case BookItemType.Recent:
+                        return "{Recent:" + Header + "}";
+                    case BookItemType.Solution:
+                        return "{Solution:" + Header + "}";
+                }
+
+                return "{?}";
+            }
+        }
 
         /// <summary>
         /// Clone a book item under a new parent and with a new type.

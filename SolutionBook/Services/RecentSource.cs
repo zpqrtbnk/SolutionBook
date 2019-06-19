@@ -43,6 +43,13 @@ namespace SolutionBook.Services
 
         private IEnumerable<Recent> GetRecents(IVsDataSourceFactory factory)
         {
+            // this can give... strange results including duplicates
+            // not exactly what the menu gives - how come?!
+            //
+            // see also ~/AppData/Local/Microsoft/VisualStudio/.../ApplicationPrivateSettings.xml
+            // which 'seems' to contain some recent stuff (and better than using the bin thing there?
+
+
             var kind = Kind.Project;
             factory.GetDataSource(
                 new Guid("9099ad98-3136-4aca-a9ac-7eeeaee51dca"),
