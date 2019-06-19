@@ -16,7 +16,6 @@ namespace SolutionBook
         private const string WindowObjectKind = "{" + WindowGuidString + "}";
 
         private ToolWindowState _state;
-        //private ToolWindowControl _content;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow1"/> class.

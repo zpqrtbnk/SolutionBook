@@ -15,8 +15,6 @@ namespace SolutionBook
 
         public IEnumerable<BookItem> GetAll()
         {
-            System.Threading.Thread.Sleep(5000);
-
             var recentItems = RecentSource.GetRecents();
             var settingItems = ItemSource.Load();
             var root = new List<BookItem>();
