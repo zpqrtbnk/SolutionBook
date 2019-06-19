@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Documents;
 using SolutionBook.Services;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SolutionBook
 {
@@ -357,7 +358,7 @@ namespace SolutionBook
             {
                 _sourceItem = selectedItem;
                 var finalDropEffect = DragDrop.DoDragDrop(container, selectedItem, DragDropEffect);
-                ClearAdorner();
+                SetAdorner(null);
                 DoDrop(finalDropEffect);
             }
         }
@@ -417,23 +418,62 @@ namespace SolutionBook
             }
         }
 
-        private AdornerLayer _adornerLayer;
         private DragDropAdorner _adorner;
         private TreeViewItem _adorned;
+        private object _adornLock = new object();
 
-        private void ClearAdorner()
+        private void SetAdorner(TreeViewItem element, int relative = 0)
         {
-            if (_adorner != null)
+            if (relative == 0)
             {
-                _adornerLayer.Remove(_adorner);
-                _adornerLayer = null;
-                _adorner = null;
-            }
+                if (_adorner != null)
+                {
+                    //Debug.WriteLine("clear adorner");
+                    _adorner.Remove();
+                    _adorner = null;
+                }
 
-            if (_adorned != null)
+                if (_adorned != null)
+                {
+                    //Debug.WriteLine("clear background");
+                    _adorned.Background = DragDropAdorner.Transparent;
+                    _adorned = null;
+                }
+                
+                if (element == null) return;
+
+                //Debug.WriteLine("set background");
+                _adorned = element;
+                _adorned.Background = DragDropAdorner.Brush;
+            }
+            else
             {
-                _adorned.Background = DragDropAdorner.Transparent;
-                _adorned = null;
+                if (_adorner != null && _adorned != element)
+                {
+                    //Debug.WriteLine("clear adorner");
+                    _adorner.Remove();
+                    _adorner = null;
+                }
+
+                if (_adorned != null)
+                {
+                    //Debug.WriteLine("clear background");
+                    _adorned.Background = DragDropAdorner.Transparent;
+                    _adorned = null;
+                }
+
+                if (element == null) return;
+
+                _adorned = element;
+
+                var width = GetWidth(element.Header as BookItem, element, relative);
+
+                //Debug.WriteLine(_adorner == null ? "set adorner" : "move adorner");
+
+                if (_adorner == null)
+                    _adorner = new DragDropAdorner(element, relative, width);
+                else
+                    _adorner.Update(relative, width);
             }
         }
 
@@ -469,51 +509,24 @@ namespace SolutionBook
         {
             e.Handled = true;
 
-            var target = e.OriginalSource as UIElement;
-            var targetTreeViewItem = target == null ? null : GetNearestContainer(target);
-            var targetBookItem = targetTreeViewItem == null ? null : targetTreeViewItem.Header as BookItem;
-
-            //var tvi2 = target == null ? null : target.VisualUpwardSearch<TreeViewItem>();
-            var relative = targetTreeViewItem == null ? 0 : GetRelative(targetTreeViewItem, e);
-
-            if (targetBookItem == null || targetBookItem == _sourceItem || !IsValidDropTarget(targetBookItem, relative))
-            {
-                //System.Diagnostics.Debug.WriteLine("XX: " + e.OriginalSource + " " + tvi2);
-                e.Effects = DragDropEffects.None;
-                ClearAdorner();
-                return;
-            }
-
-            //System.Diagnostics.Debug.WriteLine("AA: " + e.OriginalSource + " " + pos + " " + height + " " + a);
-
-            if (targetTreeViewItem == _adorned && _adorner != null)
+            lock (_adornLock)
             { 
-                if (relative == 0)
-                {
-                    ClearAdorner();
-                    targetTreeViewItem.Background = DragDropAdorner.Brush;
-                }
-                else
-                {
-                    _adorner.Update(relative, GetWidth(targetBookItem, targetTreeViewItem, relative));
-                    _adornerLayer.Update();
-                }
-            }
-            else
-            {
-                ClearAdorner();
-                _adorned = targetTreeViewItem;
+                var target = e.OriginalSource as UIElement;
+                var targetTreeViewItem = target == null ? null : GetNearestContainer(target);
+                var targetBookItem = targetTreeViewItem == null ? null : targetTreeViewItem.Header as BookItem;
+                var relative = targetTreeViewItem == null ? 0 : GetRelative(targetTreeViewItem, e);
 
-                if (relative != 0)
+                //Debug.WriteLine("check " + targetBookItem?.Header);
+
+                if (targetBookItem == null || targetBookItem == _sourceItem || !IsValidDropTarget(targetBookItem, relative))
                 {
-                    _adornerLayer = AdornerLayer.GetAdornerLayer(_adorned);
-                    _adorner = new DragDropAdorner(_adorned, relative, GetWidth(targetBookItem, targetTreeViewItem, relative));
-                    _adornerLayer.Add(_adorner);
+                    //Debug.WriteLine("nothing");
+                    e.Effects = DragDropEffects.None;
+                    SetAdorner(null);
+                    return;
                 }
-                else
-                {
-                    targetTreeViewItem.Background = DragDropAdorner.Brush;
-                }
+
+                SetAdorner(targetTreeViewItem, relative);
             }
         }
 

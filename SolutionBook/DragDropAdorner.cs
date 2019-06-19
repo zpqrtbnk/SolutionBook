@@ -13,6 +13,8 @@ namespace SolutionBook
 
         private static readonly Pen Pen;
 
+        private AdornerLayer _adornerLayer;
+
         private int _pos;
         private double _width;
         
@@ -41,6 +43,9 @@ namespace SolutionBook
             IsHitTestVisible = false;
             _pos = pos;
             _width = width;
+
+            _adornerLayer = AdornerLayer.GetAdornerLayer(adornedElement);
+            _adornerLayer.Add(this);
         }
 
         /// <summary>
@@ -52,6 +57,8 @@ namespace SolutionBook
         /// Gets the transparent brush.
         /// </summary>
         public static readonly Brush Transparent;
+
+        /// <inheritdoc />
         protected override void OnRender(DrawingContext drawingContext)
         {
             var height = AdornedElement.DesiredSize.Height;
@@ -73,8 +80,22 @@ namespace SolutionBook
         /// </remarks>
         public void Update(int pos, double width)
         {
+            if (_adornerLayer == null) return;
+
             _pos = pos;
             _width = width;
+            _adornerLayer.Update();
+        }
+
+        /// <summary>
+        /// Removes the adorner.
+        /// </summary>
+        public void Remove()
+        {
+            if (_adornerLayer == null) return;
+
+            _adornerLayer.Remove(this);
+            _adornerLayer = null;
         }
     }
 }
