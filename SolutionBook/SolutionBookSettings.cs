@@ -11,9 +11,7 @@ namespace SolutionBook
     /// </summary>
     public class SolutionBookSettings
     {
-        /// <summary>
-        /// Gets the items from the settings.
-        /// </summary>
+        /*
         public static async Task<IList<BookItem>> LoadAsync()
         {
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SolutionBook.settings");
@@ -48,6 +46,42 @@ namespace SolutionBook
                 return items;
 
             }).ConfigureAwait(false);
+        }
+        */
+
+        /// <summary>
+        /// Gets the items from the settings.
+        /// </summary>
+        public IList<BookItem> Load()
+        {
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SolutionBook.settings");
+
+            if (!File.Exists(path))
+                return new List<BookItem>();
+
+            void Read(IEnumerable<XElement> elements, ICollection<BookItem> items, BookItem parent)
+            {
+                foreach (var element in elements)
+                {
+                    if (element.Name == "Solution")
+                    {
+                        items.Add(new BookItem(parent, BookItemType.Solution, element.Attribute("path").Value) { Header = element.Attribute("name").Value });
+                    }
+                    else
+                    {
+                        var folder = new BookItem(parent, BookItemType.Folder) { Header = element.Attribute("name").Value };
+                        items.Add(folder);
+                        Read(element.Elements(), folder.Items, folder);
+                    }
+                }
+            }
+
+            var document = XDocument.Load(path);
+            var settingItems = new List<BookItem>();
+
+            Read(document.Root.Elements(), settingItems, null);
+
+            return settingItems;
         }
 
         /// <summary>

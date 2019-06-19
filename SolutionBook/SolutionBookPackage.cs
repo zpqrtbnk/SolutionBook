@@ -63,9 +63,12 @@ namespace SolutionBook
             var dataSourceFactory = await GetServiceAsync(typeof(SVsDataSourceFactory)) as IVsDataSourceFactory;
             var dte = await GetServiceAsync(typeof(DTE)) as DTE;
 
-            var items = await SolutionBookSettings.LoadAsync();
-            var recents = new RecentSource(dataSourceFactory);
-            return new ToolWindowState { RecentSource = recents, ItemSource = new SolutionBookSettings(), Items = items, DTE = dte };
+            return new ToolWindowState 
+            {
+                RecentSource = new RecentSource(dataSourceFactory), 
+                ItemSource = new SolutionBookSettings(), 
+                DTE = dte 
+            };
         }
     }
 }

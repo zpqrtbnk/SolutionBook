@@ -10,6 +10,7 @@ using System;
 using System.Windows.Media;
 using System.Windows.Documents;
 using SolutionBook.Services;
+using System.Threading.Tasks;
 
 namespace SolutionBook
 {
@@ -22,25 +23,21 @@ namespace SolutionBook
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindowControl"/> class.
         /// </summary>
-        public ToolWindowControl(ToolWindowState state)
+        public ToolWindowControl(ToolWindowState state, ToolWindow window)
         {
             InitializeComponent();
 
             _state = state;
             Solutions.Initialize(_state.DTE);
-
-            Populate();
         }
 
-        private void Populate()
+        public void Populate(IEnumerable<BookItem> items)
         {
-            var recentItems = new BookItem(null, BookItemType.Recents) { Header = "Recent" };
-            Book.Items.Add(recentItems);
-
-            PopulateRecents(_state.Recents);
-
-            foreach (var item in _state.Items)
+            foreach (var item in items)
                 Book.Items.Add(item);
+
+            LoadingPanel.Visibility = Visibility.Hidden;
+            ToolPanel.Visibility = Visibility.Visible;
         }
 
         private void PopulateRecents(IEnumerable<RecentSource.Recent> recents)
@@ -48,11 +45,11 @@ namespace SolutionBook
             var items = Book.Items[0] as BookItem;
             items.Items.Clear();
 
-            foreach (var recent in recents)
+            foreach (var item in recents)
             {
                 // fixme test availability?
-                var solutionName = Path.GetFileNameWithoutExtension(recent.Path);
-                items.Items.Add(new BookItem(items, BookItemType.Recent, recent.Path) { Header = solutionName });
+                var solutionName = Path.GetFileNameWithoutExtension(item.Path);
+                items.Items.Add(new BookItem(items, BookItemType.Recent, item.Path) { Header = solutionName });
             }
         }
 
@@ -134,7 +131,7 @@ namespace SolutionBook
             var treeItem = sender as MenuItem;
             var bookItem = treeItem.DataContext as BookItem;
 
-            PopulateRecents(_state.Recents);
+            PopulateRecents(_state.RecentSource.GetRecents());
         }
 
         //private void Menu_Properties(object sender, RoutedEventArgs e)
@@ -147,7 +144,7 @@ namespace SolutionBook
 
         private void Save()
         {
-            // might want some delay, not Wait, async, locking, queing, etc etc etc
+            // FIXME: might want some delay, not Wait, async, locking, queing, etc etc etc
             _state.ItemSource.SaveAsync(Book.Items.Cast<BookItem>().Skip(1)).Wait();
         }
 

@@ -190,7 +190,8 @@
     </UserControl.Resources>
 
     <Grid>
-        <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" LastChildFill="False">
+        <TextBlock Name="LoadingPanel" Text="..." VerticalAlignment="Center" HorizontalAlignment="Center" />
+        <DockPanel Name="ToolPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" LastChildFill="False" Visibility="Hidden">
 
             <StackPanel Style="{DynamicResource ToolBarStyle}">
                 <StackPanel.Resources>
