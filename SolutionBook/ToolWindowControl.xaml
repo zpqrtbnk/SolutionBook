@@ -32,9 +32,11 @@
                 <DataTrigger Binding="{Binding Type}" Value="{x:Static local:BookItemType.Folder}">
                     <Setter Property="ContextMenu" Value="{DynamicResource FolderContextMenu}" />
                 </DataTrigger>
+                <!--
                 <DataTrigger Binding="{Binding Type}" Value="{x:Static local:BookItemType.Recents}">
                     <Setter Property="ContextMenu" Value="{DynamicResource RecentsContextMenu}" />
                 </DataTrigger>
+                    -->
                 <DataTrigger Binding="{Binding Type}" Value="{x:Static local:BookItemType.Recent}">
                     <Setter Property="ContextMenu" Value="{DynamicResource RecentContextMenu}" />
                 </DataTrigger>
@@ -124,6 +126,7 @@
             </MenuItem>
         </ContextMenu>
 
+        <!--
         <ContextMenu x:Key="RecentsContextMenu" Style="{DynamicResource ContextMenuStyle}">
 
             <MenuItem Header="Refresh" Click="Menu_Refresh" Style="{DynamicResource MenuItemStyle}">
@@ -132,7 +135,8 @@
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
-
+        -->
+        
         <ContextMenu x:Key="RecentContextMenu" Style="{DynamicResource ContextMenuStyle}">
 
             <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}" IsEnabled="{Binding Path=(local:Solutions.CanOpen)}">
@@ -153,6 +157,11 @@
             <Setter Property="Orientation" Value="Horizontal" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="DockPanel.Dock" Value="Top" />
+        </Style>
+
+        <Style x:Key="ToolBarSeparatorStyle" TargetType="{x:Type Separator}" BasedOn="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}">
+            <Setter Property="Background" Value="{DynamicResource {x:Static local:UiColors.ToolBarHover}}" />
+            <Setter Property="Margin" Value="2 4 2 4" />
         </Style>
         
         <!--
@@ -197,6 +206,16 @@
                 <StackPanel.Resources>
                     <Style BasedOn="{StaticResource ToolBarButtonStyle}" TargetType="{x:Type Button}" />
                 </StackPanel.Resources>
+                <Button Name="Save" ToolTip="Save" Click="Save_Click" Template="{DynamicResource ToolBarButtonTemplate}">
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Save}"/>
+                </Button>
+                <Button Name="Refresh" ToolTip="Refresh" Click="Refresh_Click" Template="{DynamicResource ToolBarButtonTemplate}">
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Refresh}"/>
+                </Button>
+                <Separator Style="{DynamicResource ToolBarSeparatorStyle}" />
+                <!--
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="2 4 2 4" Background="{DynamicResource {x:Static local:UiColors.ToolBarSeparator}}"/>
+                -->
                 <Button Name="AddRootFolder" ToolTip="Add Root Folder" Click="AddRootFolder_Click" Template="{DynamicResource ToolBarButtonTemplate}">
                     <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.AddFolder}"/>
                 </Button>

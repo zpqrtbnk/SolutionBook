@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -11,44 +12,6 @@ namespace SolutionBook
     /// </summary>
     public class SolutionBookSettings
     {
-        /*
-        public static async Task<IList<BookItem>> LoadAsync()
-        {
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SolutionBook.settings");
-
-            if (!File.Exists(path))
-                return new List<BookItem>();
-
-            void Read(IEnumerable<XElement> elements, ICollection<BookItem> items, BookItem parent)
-            {
-                foreach (var element in elements)
-                {
-                    if (element.Name == "Solution")
-                    {
-                        items.Add(new BookItem(parent, BookItemType.Solution, element.Attribute("path").Value) { Header = element.Attribute("name").Value });
-                    }
-                    else
-                    {
-                        var folder = new BookItem(parent, BookItemType.Folder) { Header = element.Attribute("name").Value };
-                        items.Add(folder);
-                        Read(element.Elements(), folder.Items, folder);
-                    }
-                }
-            }
-
-            return await Task.Run(() =>
-            {
-                var document = XDocument.Load(path);
-                var items = new List<BookItem>();
-
-                Read(document.Root.Elements(), items, null);
-
-                return items;
-
-            }).ConfigureAwait(false);
-        }
-        */
-
         /// <summary>
         /// Gets the items from the settings.
         /// </summary>
@@ -76,10 +39,27 @@ namespace SolutionBook
                 }
             }
 
-            var document = XDocument.Load(path);
+            XDocument document = null;
+            var attempts = 0;
+            while (document == null && attempts++ < 8)
+            {
+                try
+                {
+                    using (var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None))
+                    {
+                        document = XDocument.Load(stream);
+                    }
+                }
+                catch
+                {
+                    Thread.Sleep(250);
+                }
+            }
+
             var settingItems = new List<BookItem>();
 
-            Read(document.Root.Elements(), settingItems, null);
+            if (document != null)
+                Read(document.Root.Elements(), settingItems, null);
 
             return settingItems;
         }
@@ -87,7 +67,7 @@ namespace SolutionBook
         /// <summary>
         /// Saves the items in the settings.
         /// </summary>
-        public async Task SaveAsync(IEnumerable<BookItem> items)
+        public void Save(IEnumerable<BookItem> items)
         {
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SolutionBook.settings");
             
@@ -112,16 +92,28 @@ namespace SolutionBook
                 }
             }
 
-            await Task.Run(() =>
+            var document = new XDocument();
+            var book = new XElement("SolutionBook");
+            document.Add(book);
+
+            Write(book, items);
+
+            var attempts = 0;
+
+            while (attempts == 0 && attempts++ < 8)
             {
-                var document = new XDocument();
-                var elements = new XElement("SolutionBook");
-                document.Add(elements);
-
-                Write(elements, items);
-
-                document.Save(path, SaveOptions.None);
-            }).ConfigureAwait(false);
+                try
+                {
+                    using (var stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
+                    {
+                        document.Save(stream, SaveOptions.None);
+                    }
+                }
+                catch
+                {
+                    Thread.Sleep(250);
+                }
+            }
         }
     }
 }

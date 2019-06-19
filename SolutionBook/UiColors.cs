@@ -33,5 +33,11 @@ namespace SolutionBook
         /// Gets the drag and drop color.
         /// </summary>
         public static Color DragDropColor => Colors.LightCoral;
+
+        /// <summary>
+        /// Gets the toolbar separator color.
+        /// </summary>
+        //public static ThemeResourceKey ToolBarSeparator = EnvironmentColors.CommandBarToolBarSeparatorBrushKey;
+        //public static object ToolBarSeparator = VsBrushes.CommandBarToolBarSeparatorKey;
     }
 }
