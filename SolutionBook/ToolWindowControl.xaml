@@ -74,7 +74,7 @@
 
         <ContextMenu x:Key="SolutionContextMenu" Style="{DynamicResource ContextMenuStyle}">
 
-            <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}" IsEnabled="{Binding Path=(local:OpenEnabler.IsEnabled)}">
+            <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}" IsEnabled="{Binding Path=(local:Solutions.CanOpen)}">
                 <MenuItem.Icon>
                     <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Open}" />
                 </MenuItem.Icon>
@@ -135,7 +135,7 @@
 
         <ContextMenu x:Key="RecentContextMenu" Style="{DynamicResource ContextMenuStyle}">
 
-            <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}" IsEnabled="{Binding Path=(local:OpenEnabler.IsEnabled)}">
+            <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}" IsEnabled="{Binding Path=(local:Solutions.CanOpen)}">
                 <MenuItem.Icon>
                     <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Open}" />
                 </MenuItem.Icon>

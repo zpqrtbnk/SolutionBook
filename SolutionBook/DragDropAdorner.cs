@@ -8,8 +8,7 @@ namespace SolutionBook
     {
         // https://docs.microsoft.com/en-us/dotnet/framework/wpf/controls/adorners-overview
 
-        private static readonly Color Color = Colors.DarkSlateGray;
-        public static readonly Brush Brush = new SolidColorBrush(Color);
+        public static readonly Brush Brush = new SolidColorBrush(UiColors.DragDropColor);
         public static readonly Brush Transparent = new SolidColorBrush(Colors.Transparent);
         private static readonly Pen Pen = new Pen(Brush, 1.2);
 

@@ -6,46 +6,34 @@ using System.Xml.Linq;
 
 namespace SolutionBook
 {
+    /// <summary>
+    /// Represents the settings.
+    /// </summary>
     public class SolutionBookSettings
     {
-        public class Element
-        {
-            public string Name { get; set; }
-        }
-
-        public class Solution : Element
-        {
-            public string Path { get; set; }
-        }
-
-        public class Folder : Element
-        {
-            public List<Element> Elements{ get; set; } = new List<Element>();
-        }
-
-        public List<Element> Elements { get; set; } = new List<Element>();
-
-        public static async Task<SolutionBookSettings> LoadAsync()
+        /// <summary>
+        /// Gets the items from the settings.
+        /// </summary>
+        public static async Task<IList<BookItem>> LoadAsync()
         {
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SolutionBook.settings");
 
             if (!File.Exists(path))
-                return new SolutionBookSettings();
+                return new List<BookItem>();
 
-            void Read(IEnumerable<XElement> xElements, List<Element> elements)
+            void Read(IEnumerable<XElement> elements, ICollection<BookItem> items, BookItem parent)
             {
-                foreach (var xElement in xElements)
+                foreach (var element in elements)
                 {
-                    if (xElement.Name == "Solution")
+                    if (element.Name == "Solution")
                     {
-                        var solution = new Solution { Name = xElement.Attribute("name").Value, Path = xElement.Attribute("path").Value };
-                        elements.Add(solution);
+                        items.Add(new BookItem(parent, BookItemType.Solution, element.Attribute("path").Value) { Header = element.Attribute("name").Value });
                     }
                     else
                     {
-                        var folder = new Folder { Name = xElement.Attribute("name").Value };
-                        elements.Add(folder);
-                        Read(xElement.Elements(), folder.Elements);
+                        var folder = new BookItem(parent, BookItemType.Folder) { Header = element.Attribute("name").Value };
+                        items.Add(folder);
+                        Read(element.Elements(), folder.Items, folder);
                     }
                 }
             }
@@ -53,43 +41,53 @@ namespace SolutionBook
             return await Task.Run(() =>
             {
                 var document = XDocument.Load(path);
-                var settings = new SolutionBookSettings();
-                var elements = settings.Elements;
+                var items = new List<BookItem>();
 
-                Read(document.Root.Elements(), settings.Elements);
+                Read(document.Root.Elements(), items, null);
 
-                return settings;
+                return items;
 
             }).ConfigureAwait(false);
         }
 
-        public static Task SaveAsync(SolutionBookSettings settings)
+        /// <summary>
+        /// Saves the items in the settings.
+        /// </summary>
+        public async Task SaveAsync(IEnumerable<BookItem> items)
         {
-            /*
-            await Task.Run(async () =>
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SolutionBook.settings");
+            
+            void Write(XElement elements, IEnumerable<BookItem> eitems)
             {
-                var serializer = new XmlSerializer(typeof(SolutionPageConfiguration));
-
-                for (var i = 0; i <= _MAXIMUM_RETRIES; i++)
+                foreach (var item in eitems)
                 {
-                    try
+                    if (item.Type == BookItemType.Solution)
                     {
-                        using (var writer = new StreamWriter(_settingsFilePath))
-                        {
-                            serializer.Serialize(writer, configuration);
-                            return;
-                        }
+                        var element = new XElement("Solution");
+                        element.Add(new XAttribute("name", item.Header));
+                        element.Add(new XAttribute("path", item.Path));
+                        elements.Add(element);
                     }
-                    catch (Exception)
+                    else
                     {
-                        if (i >= _MAXIMUM_RETRIES)
-                            return;
+                        var element = new XElement("Folder");
+                        element.Add(new XAttribute("name", item.Header));
+                        elements.Add(element);
+                        Write(element, item.Items);
                     }
-                    await Task.Delay(200);
                 }
+            }
+
+            await Task.Run(() =>
+            {
+                var document = new XDocument();
+                var elements = new XElement("SolutionBook");
+                document.Add(elements);
+
+                Write(elements, items);
+
+                document.Save(path, SaveOptions.None);
             }).ConfigureAwait(false);
-            */
-            throw new NotImplementedException();
         }
     }
 }

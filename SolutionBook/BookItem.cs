@@ -7,6 +7,9 @@ using System.Diagnostics;
 
 namespace SolutionBook
 {
+    /// <summary>
+    /// Represents a solution book item.
+    /// </summary>
     [DebuggerDisplay("{{Type}:{Header}}")]
     public class BookItem : INotifyPropertyChanged
     {
@@ -14,21 +17,48 @@ namespace SolutionBook
         private bool _isEditing;
         private string _header;
 
-        public BookItem(BookItem parent)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BookItem"/> class with a parent item.
+        /// </summary>
+        /// <param name="parent">A parent item, or <c>null</c> for root items.</param>
+        /// <param name="type">The book item type.</param>
+        /// <param name="path">The path of the solution.</param>
+        /// <param name="items">The child items.</param>
+        private BookItem(BookItem parent, BookItemType type, string path, ObservableCollection<BookItem> items)
         {
-            Items = new ObservableCollection<BookItem>();
+            Items = items;
             Parent = parent;
+
+            Type = type;
+            Path = path;
         }
 
-        public BookItem(BookItem parent, BookItem source)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BookItem"/> class with a parent item.
+        /// </summary>
+        /// <param name="parent">A parent item, or <c>null</c> for root items.</param>
+        /// <param name="type">The book item type.</param>
+        /// <param name="path">The path of the solution.</param>
+        public BookItem(BookItem parent, BookItemType type, string path = null)
+            : this(parent, type, path, new ObservableCollection<BookItem>())
+        { }
+
+        /// <summary>
+        /// Clone a book item under a new parent and with a new type.
+        /// </summary>
+        /// <param name="newParent">The new parent item.</param>
+        /// <param name="newType">The new type.</param>
+        /// <returns>The cloned book item.</returns>
+        /// <remarks>
+        /// <para>The cloned item shares its <see cref="Items"/> collection with the source item.</para>
+        /// <para>The cloned item is *not* added to the new parent.</para>
+        /// </remarks>
+        public BookItem Clone(BookItem newParent, BookItemType newType)
         {
-            Items = source.Items;
-            Parent = parent;
-            Type = source.Type;
-            Header = source.Header;
-            Path = source.Path;
+            return new BookItem(newParent, newType, Path, Items) { Header = Header };
         }
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string name)
@@ -36,10 +66,19 @@ namespace SolutionBook
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
+        /// <summary>
+        /// Gets the parent of this item.
+        /// </summary>
         public BookItem Parent { get; }
 
-        public BookItemType Type { get; set; }
+        /// <summary>
+        /// Gets or sets the type of this item.
+        /// </summary>
+        public BookItemType Type { get; }
 
+        /// <summary>
+        /// Gets or sets the header of this item.
+        /// </summary>
         public string Header
         {
             get => _header;
@@ -50,10 +89,22 @@ namespace SolutionBook
             }
         }
 
-        public string Path { get; set; }
+        /// <summary>
+        /// Gets or sets the path of this item.
+        /// </summary>
+        /// <remarks>
+        /// <para>Only solutions have paths.</para>
+        /// </remarks>
+        public string Path { get; }
 
-        public ObservableCollection<BookItem> Items { get; set; }
+        /// <summary>
+        /// Gets or sets the collection of child items of this item.
+        /// </summary>
+        public ObservableCollection<BookItem> Items { get; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the item is expanded.
+        /// </summary>
         public bool IsExpanded
         {
             get => _isExpanded;
@@ -65,6 +116,9 @@ namespace SolutionBook
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the item is being edited.
+        /// </summary>
         public bool IsEditing
         {
             get => _isEditing;
@@ -75,6 +129,9 @@ namespace SolutionBook
             }
         }
 
+        /// <summary>
+        /// Gets the icon image moniker for this item.
+        /// </summary>
         public ImageMoniker Icon 
         {
             get
@@ -93,6 +150,9 @@ namespace SolutionBook
             }
         }
 
+        /// <summary>
+        /// Gets the font weight for this item.
+        /// </summary>
         public FontWeight Weight
         {
             get

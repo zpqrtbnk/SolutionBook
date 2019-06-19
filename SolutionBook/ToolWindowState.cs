@@ -6,10 +6,14 @@ namespace SolutionBook
 {
     public class ToolWindowState
     {
-        public IEnumerable<FileMenuRecents.RecentProject> RecentSolutions { get; set; }
+        public IEnumerable<RecentSource.Recent> Recents => RecentSource.GetRecents();
 
-        public SolutionBookSettings Settings { get; set; }
+        public ICollection<BookItem> Items { get; set; }
 
         public DTE DTE { get; set; }
+
+        public RecentSource RecentSource { get; set; }
+
+        public SolutionBookSettings ItemSource { get; set;}
     }
 }

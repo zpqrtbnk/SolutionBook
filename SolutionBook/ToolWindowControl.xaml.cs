@@ -2,13 +2,14 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.IO;
+using System.Linq;
 using Microsoft.VisualStudio.Imaging;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Microsoft.Win32;
 using System;
 using System.Windows.Media;
 using System.Windows.Documents;
+using SolutionBook.Services;
 
 namespace SolutionBook
 {
@@ -26,54 +27,32 @@ namespace SolutionBook
             InitializeComponent();
 
             _state = state;
+            Solutions.Initialize(_state.DTE);
 
-            //BookItem childItem1 = new BookItem(null) { Header = "Child item #1", Type = BookItemType.Folder };
-            //childItem1.Items.Add(new BookItem(childItem1) { Header = "Child item #1.1", Type = BookItemType.Solution, Path = "path1.1" });
-            //childItem1.Items.Add(new BookItem(childItem1) { Header = "Child item #1.2", Type = BookItemType.Solution, Path = "path1.2" });
-            //Book.Items.Add(childItem1);
-            //Book.Items.Add(new BookItem(null) { Header = "Child item #2", Type = BookItemType.Solution, Path = "path2" });
+            Populate();
+        }
 
-            var recentItems = new BookItem(null) { Header = "Recent", Type = BookItemType.Recents };
+        private void Populate()
+        {
+            var recentItems = new BookItem(null, BookItemType.Recents) { Header = "Recent" };
             Book.Items.Add(recentItems);
 
-            foreach (var recent in state.RecentSolutions)
+            PopulateRecents(_state.Recents);
+
+            foreach (var item in _state.Items)
+                Book.Items.Add(item);
+        }
+
+        private void PopulateRecents(IEnumerable<RecentSource.Recent> recents)
+        {
+            var items = Book.Items[0] as BookItem;
+            items.Items.Clear();
+
+            foreach (var recent in recents)
             {
                 // fixme test availability?
                 var solutionName = Path.GetFileNameWithoutExtension(recent.Path);
-                recentItems.Items.Add(new BookItem(recentItems) { Header = solutionName, Path = recent.Path, Type = BookItemType.Recent });
-            }
-
-            foreach (var element in state.Settings.Elements)
-            {
-                if (element is SolutionBookSettings.Solution solution)
-                {
-                    Book.Items.Add(new BookItem(null) { Header = solution.Name, Path = solution.Path, Type = BookItemType.Solution });
-                }
-                else if (element is SolutionBookSettings.Folder folder)
-                {
-                    var folderItems = new BookItem(null) { Header = folder.Name, Type = BookItemType.Folder };
-                    Book.Items.Add(folderItems);
-                    Populate(folderItems, folder.Elements);
-                }
-            }
-
-            OpenEnabler.Initialize(_state.DTE);
-        }
-
-        void Populate(BookItem bookItems, List<SolutionBookSettings.Element> elements)
-        {
-            foreach (var element in elements)
-            {
-                if (element is SolutionBookSettings.Solution solution)
-                {
-                    bookItems.Items.Add(new BookItem(bookItems) { Header = solution.Name, Path = solution.Path, Type = BookItemType.Solution });
-                }
-                else if (element is SolutionBookSettings.Folder folder)
-                {
-                    var folderItems = new BookItem(bookItems) { Header = folder.Name, Type = BookItemType.Folder };
-                    bookItems.Items.Add(folderItems);
-                    Populate(folderItems, folder.Elements);
-                }
+                items.Items.Add(new BookItem(items, BookItemType.Recent, recent.Path) { Header = solutionName });
             }
         }
 
@@ -104,6 +83,9 @@ namespace SolutionBook
 
             _editItem.IsEditing = false;
             _editItem = null;
+
+            if (!string.IsNullOrWhiteSpace(value))
+                Save();
         }
 
         private void BookItem_Expanded(object sender, RoutedEventArgs e)
@@ -152,7 +134,7 @@ namespace SolutionBook
             var treeItem = sender as MenuItem;
             var bookItem = treeItem.DataContext as BookItem;
 
-            System.Diagnostics.Debug.WriteLine($"Refresh {bookItem.Header}");
+            PopulateRecents(_state.Recents);
         }
 
         //private void Menu_Properties(object sender, RoutedEventArgs e)
@@ -163,12 +145,19 @@ namespace SolutionBook
         //    System.Diagnostics.Debug.WriteLine($"Open solution {bookItem.Header} properties");
         //}
 
+        private void Save()
+        {
+            // might want some delay, not Wait, async, locking, queing, etc etc etc
+            _state.ItemSource.SaveAsync(Book.Items.Cast<BookItem>().Skip(1)).Wait();
+        }
+
         private void Menu_AddFolder(object sender, RoutedEventArgs e)
         {
             var treeItem = sender as MenuItem;
             var bookItem = treeItem.DataContext as BookItem;
 
-            bookItem.Items.Add(new BookItem(bookItem) { Type = BookItemType.Folder, Header = "(new folder)" });
+            bookItem.Items.Add(new BookItem(bookItem, BookItemType.Folder) { Header = "(new folder)" });
+            Save();
         }
 
         private void Menu_AddSolution(object sender, RoutedEventArgs e)
@@ -194,7 +183,10 @@ namespace SolutionBook
                 : null; 
             
             if (path != null)
-                bookItem.Items.Add(new BookItem(bookItem) { Type = BookItemType.Solution, Header = Path.GetFileNameWithoutExtension(path), Path = path });
+            {
+                bookItem.Items.Add(new BookItem(bookItem, BookItemType.Solution, path) { Header = Path.GetFileNameWithoutExtension(path) });
+                Save();
+            }
         }
 
         private void Menu_RemoveFolder(object sender, RoutedEventArgs e)
@@ -207,6 +199,8 @@ namespace SolutionBook
                 Book.Items.Remove(bookItem);
             else
                 parentItem.Items.Remove(bookItem);
+
+            Save();
         }
 
         private void Menu_RemoveSolution(object sender, RoutedEventArgs e)
@@ -219,6 +213,8 @@ namespace SolutionBook
                 Book.Items.Remove(bookItem);
             else
                 parentItem.Items.Remove(bookItem);
+
+            Save();
         }
 
         private void Book_PreviewMouseLeftDown(object sender, MouseButtonEventArgs e)
@@ -252,7 +248,7 @@ namespace SolutionBook
             // prevent double-click and expand/collapse
             e.Handled = true;
 
-            System.Diagnostics.Debug.WriteLine($"Open solution {bookItem.Header} as {bookItem.Path}");
+            Solutions.Open(bookItem.Path);
         }
 
         private void Book_PreviewMouseRightDown(object sender, MouseButtonEventArgs e)
@@ -389,7 +385,7 @@ namespace SolutionBook
             if (effect == DragDropEffects.Move || effect == DragDropEffects.Copy)
             {
                 var newType = _sourceItem.Type == BookItemType.Recent ? BookItemType.Solution : _sourceItem.Type;
-                var newItem = new BookItem(_targetItem, _sourceItem) { Type = newType };
+                var newItem = _sourceItem.Clone(_targetItem, newType);
 
                 if (_targetRelative == 0)
                 {
@@ -408,6 +404,8 @@ namespace SolutionBook
             _targetItem = null;
             _targetRelative = 0;
             _sourceItem = null;
+
+            Save();
         }
 
         private DragDropEffects DragDropEffect
@@ -543,7 +541,7 @@ namespace SolutionBook
                 ? Book.Items[index] as BookItem
                 : target.Parent.Items[index];
 
-            System.Diagnostics.Debug.WriteLine("W: " + target.Header + " - " + other.Header);
+            //Debug.WriteLine("W: " + target.Header + " - " + other.Header);
 
             var targetPresenter = GetPresenter(targetViewItem);
             var otherViewItem = GetContainerFromItem(other) as TreeViewItem;
@@ -709,7 +707,8 @@ namespace SolutionBook
 
         private void AddRootFolder_Click(object sender, RoutedEventArgs e)
         {
-            Book.Items.Add(new BookItem(null) { Type = BookItemType.Folder, Header = "(new folder)" });
+            Book.Items.Add(new BookItem(null, BookItemType.Folder) { Header = "(new folder)" });
+            Save();
         }
 
         private void AddRootSolution_Click(object sender, RoutedEventArgs e)
@@ -734,7 +733,10 @@ namespace SolutionBook
                 : null;
 
             if (path != null)
-                Book.Items.Add(new BookItem(null) { Type = BookItemType.Solution, Header = Path.GetFileNameWithoutExtension(path), Path = path });
+            {
+                Book.Items.Add(new BookItem(null, BookItemType.Solution, path) { Header = Path.GetFileNameWithoutExtension(path) });
+                Save();
+            }
         }
 
         private TreeViewItem GetNearestContainer(UIElement element)
