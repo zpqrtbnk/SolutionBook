@@ -465,7 +465,7 @@ namespace SolutionBook
             return a;
         }
 
-        private void Book_ChkDrop(object sender, DragEventArgs e)
+        private void Book_CheckDrop(object sender, DragEventArgs e)
         {
             e.Handled = true;
 
