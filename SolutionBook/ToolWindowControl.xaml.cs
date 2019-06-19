@@ -495,7 +495,7 @@ namespace SolutionBook
                 }
                 else
                 {
-                    _adorner.UpdatePosition(relative, GetWidth(targetBookItem, targetTreeViewItem, relative));
+                    _adorner.Update(relative, GetWidth(targetBookItem, targetTreeViewItem, relative));
                     _adornerLayer.Update();
                 }
             }
