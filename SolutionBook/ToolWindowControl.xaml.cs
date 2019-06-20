@@ -373,26 +373,27 @@ namespace SolutionBook
                     _sourceItem.Parent.Items.Remove(_sourceItem);
             }
 
-            int index = _targetItem.Parent == null
+            int targetIndex = _targetItem.Parent == null
                 ? Book.Items.IndexOf(_targetItem)
                 : _targetItem.Parent.Items.IndexOf(_targetItem);
 
             if (effect == DragDropEffects.Move || effect == DragDropEffects.Copy)
             {
                 var newType = _sourceItem.Type == BookItemType.Recent ? BookItemType.Solution : _sourceItem.Type;
-                var newItem = _sourceItem.Clone(_targetItem, newType);
+                var newParent = _targetRelative == 0 ? _targetItem : _targetItem.Parent;
+                var newItem = _sourceItem.Clone(newParent, newType);
 
                 if (_targetRelative == 0)
                 {
-                    _targetItem.Items.Add(newItem);
+                    newParent.Items.Add(newItem);
                 }
                 else
                 {
-                    if (_targetRelative > 0) index += 1;
-                    if (_targetItem.Parent == null)
-                        Book.Items.Insert(index, newItem);
+                    if (_targetRelative > 0) targetIndex += 1;
+                    if (newParent == null)
+                        Book.Items.Insert(targetIndex, newItem);
                     else
-                        _targetItem.Parent.Items.Insert(index, newItem);
+                        newParent.Items.Insert(targetIndex, newItem);
                 }
             }
 
