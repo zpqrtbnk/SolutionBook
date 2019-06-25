@@ -751,19 +751,25 @@ namespace SolutionBook
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            lock (_booklock)
+            TryCatch.Action(() =>
             {
-                _state.ItemSource.Save(Book.Items.Cast<BookItem>().Skip(1));
-            }
+                lock (_booklock)
+                {
+                    _state.ItemSource.Save(Book.Items.Cast<BookItem>().Skip(1));
+                }
+            });
         }
 
         private void Refresh_Click(object sender, RoutedEventArgs e)
         {
-            lock (_booklock)
+            TryCatch.Action(() =>
             {
-                Book.Items.Clear();
-                Populate(_state.GetAll());
-            }
+                lock (_booklock)
+                {
+                    Book.Items.Clear();
+                    Populate(_state.GetAll());
+                }
+            });
         }
 
         private TreeViewItem GetNearestContainer(UIElement element)

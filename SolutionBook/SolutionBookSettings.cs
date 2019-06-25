@@ -104,7 +104,7 @@ namespace SolutionBook
             {
                 try
                 {
-                    using (var stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
+                    using (var stream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None))
                     {
                         document.Save(stream, SaveOptions.None);
                     }
