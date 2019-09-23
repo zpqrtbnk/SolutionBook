@@ -37,6 +37,7 @@ namespace SolutionBook
                 CanOpenChanged?.Invoke(null, EventArgs.Empty);
 
                 CanClose = !_canOpen;
+                CanCloseChanged?.Invoke(null, EventArgs.Empty);
             }
         }
 
@@ -48,10 +49,12 @@ namespace SolutionBook
         /// <summary>
         /// Triggers when the <see cref="CanOpen"/> property changed.
         /// </summary>
-        /// <remarks>
-        /// <para></para>
-        /// </remarks>
         public static event EventHandler CanOpenChanged;
+
+        /// <summary>
+        /// Triggers when the <see cref="CanClose"/> property changed.
+        /// </summary>
+        public static event EventHandler CanCloseChanged;
 
         /// <summary>
         /// Opens a solution.
