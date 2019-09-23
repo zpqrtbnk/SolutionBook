@@ -35,14 +35,15 @@ namespace SolutionBook
             {
                 _canOpen = value;
                 CanOpenChanged?.Invoke(null, EventArgs.Empty);
+
+                CanClose = !_canOpen;
             }
         }
 
         /// <summary>
         /// Gets or sets a value indicating whether a solution can be closed.
         /// </summary>
-        public static bool CanClose
-            => !CanOpen;
+        public static bool CanClose { get; private set; }
 
         /// <summary>
         /// Triggers when the <see cref="CanOpen"/> property changed.

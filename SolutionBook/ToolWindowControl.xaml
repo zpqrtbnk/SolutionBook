@@ -126,17 +126,6 @@
             </MenuItem>
         </ContextMenu>
 
-        <!--
-        <ContextMenu x:Key="RecentsContextMenu" Style="{DynamicResource ContextMenuStyle}">
-
-            <MenuItem Header="Refresh" Click="Menu_Refresh" Style="{DynamicResource MenuItemStyle}">
-                <MenuItem.Icon>
-                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Refresh}" />
-                </MenuItem.Icon>
-            </MenuItem>
-        </ContextMenu>
-        -->
-        
         <ContextMenu x:Key="RecentContextMenu" Style="{DynamicResource ContextMenuStyle}">
 
             <MenuItem Header="Open" Click="Menu_Open" Style="{DynamicResource MenuItemStyle}" IsEnabled="{Binding Path=(local:Solutions.CanOpen)}">
@@ -163,6 +152,14 @@
             <Setter Property="Background" Value="{DynamicResource {x:Static local:UiColors.ToolBarHover}}" />
             <Setter Property="Margin" Value="2 4 2 4" />
         </Style>
+
+        <Style x:Key="ToolBarButtonImageStyle" TargetType="{x:Type imaging:CrispImage}">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Grayscale" Value="True" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         
         <!--
             https://stackoverflow.com/questions/17259280/how-do-you-change-background-for-a-button-mouseover-in-wpf
@@ -178,20 +175,24 @@
                 </Trigger>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" TargetName="border" Value="{DynamicResource {x:Static local:UiColors.ToolBarHover}}"/> <!-- #FFBEE6FD -->
-                    <Setter Property="BorderBrush" TargetName="border" Value="#FF3C7FB1"/>
+                    <!-- <Setter Property="BorderBrush" TargetName="border" Value="#FF3C7FB1"/> -->
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
                     <Setter Property="Background" TargetName="border" Value="{DynamicResource {x:Static local:UiColors.ToolBarHover}}"/> <!-- #FFC4E5F6 -->
-                    <Setter Property="BorderBrush" TargetName="border" Value="#FF2C628B"/>
+                    <!-- <Setter Property="BorderBrush" TargetName="border" Value="#FF2C628B"/> -->
                 </Trigger>
                 <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <!--
                     <Setter Property="Background" TargetName="border" Value="#FFBCDDEE"/>
                     <Setter Property="BorderBrush" TargetName="border" Value="#FF245A83"/>
+                    -->
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
+                    <!--
                     <Setter Property="Background" TargetName="border" Value="#FFF4F4F4"/>
                     <Setter Property="BorderBrush" TargetName="border" Value="#FFADB2B5"/>
                     <Setter Property="Foreground" Value="#FF838383"/>
+                    -->
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -207,27 +208,28 @@
                     <Style BasedOn="{StaticResource ToolBarButtonStyle}" TargetType="{x:Type Button}" />
                 </StackPanel.Resources>
                 <Button Name="Save" ToolTip="Save" Click="Save_Click" Template="{DynamicResource ToolBarButtonTemplate}">
-                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Save}"/>
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Save}" Style="{DynamicResource ToolBarButtonImageStyle}"/>
                 </Button>
                 <Button Name="Refresh" ToolTip="Refresh" Click="Refresh_Click" Template="{DynamicResource ToolBarButtonTemplate}">
-                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Refresh}"/>
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.Refresh}" Style="{DynamicResource ToolBarButtonImageStyle}"/>
                 </Button>
+
                 <Separator Style="{DynamicResource ToolBarSeparatorStyle}" />
-                <!--
-                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="2 4 2 4" Background="{DynamicResource {x:Static local:UiColors.ToolBarSeparator}}"/>
-                -->
+
                 <Button Name="AddRootFolder" ToolTip="Add Root Folder" Click="AddRootFolder_Click" Template="{DynamicResource ToolBarButtonTemplate}">
-                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.AddFolder}"/>
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.AddFolder}" Style="{DynamicResource ToolBarButtonImageStyle}"/>
                 </Button>
                 <Button Name="AddRootSolution" ToolTip="Add Root Solution" Click="AddRootSolution_Click" Template="{DynamicResource ToolBarButtonTemplate}">
-                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.AddScreen}"/>
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.AddScreen}" Style="{DynamicResource ToolBarButtonImageStyle}"/>
                 </Button>
+
                 <Separator Style="{DynamicResource ToolBarSeparatorStyle}" />
+
                 <Button Name="OpenSolution" ToolTip="Open Solution" Click="OpenSolution_Click" Template="{DynamicResource ToolBarButtonTemplate}" IsEnabled="{Binding Path=(local:Solutions.CanOpen)}">
-                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.OpenDocumentGroup}"/>
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.OpenDocumentGroup}" Style="{DynamicResource ToolBarButtonImageStyle}"/>
                 </Button>
                 <Button Name="CloseSolution" ToolTip="Close Solution" Click="CloseSolution_Click" Template="{DynamicResource ToolBarButtonTemplate}" IsEnabled="{Binding Path=(local:Solutions.CanClose)}">
-                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.CloseSolution}"/>
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.CloseSolution}" Style="{DynamicResource ToolBarButtonImageStyle}"/>
                 </Button>
             </StackPanel>
 
