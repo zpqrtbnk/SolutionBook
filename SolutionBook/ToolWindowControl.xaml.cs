@@ -772,6 +772,18 @@ namespace SolutionBook
             });
         }
 
+        // https://stackoverflow.com/questions/13855401/get-full-list-of-available-commands-for-dte-executecommand
+
+        private void OpenSolution_Click(object sender, RoutedEventArgs e)
+        {
+            _state.DTE.ExecuteCommand("File.OpenProject");
+        }
+
+        private void CloseSolution_Click(object sender, RoutedEventArgs e)
+        {
+            _state.DTE.ExecuteCommand("File.CloseSolution");
+        }
+
         private TreeViewItem GetNearestContainer(UIElement element)
         {
             // Walk up the element tree to the nearest tree view item. 

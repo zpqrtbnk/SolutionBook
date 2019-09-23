@@ -222,6 +222,13 @@
                 <Button Name="AddRootSolution" ToolTip="Add Root Solution" Click="AddRootSolution_Click" Template="{DynamicResource ToolBarButtonTemplate}">
                     <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.AddScreen}"/>
                 </Button>
+                <Separator Style="{DynamicResource ToolBarSeparatorStyle}" />
+                <Button Name="OpenSolution" ToolTip="Open Solution" Click="OpenSolution_Click" Template="{DynamicResource ToolBarButtonTemplate}" IsEnabled="{Binding Path=(local:Solutions.CanOpen)}">
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.OpenDocumentGroup}"/>
+                </Button>
+                <Button Name="CloseSolution" ToolTip="Close Solution" Click="CloseSolution_Click" Template="{DynamicResource ToolBarButtonTemplate}" IsEnabled="{Binding Path=(local:Solutions.CanClose)}">
+                    <imaging:CrispImage Moniker="{x:Static images:KnownMonikers.CloseSolution}"/>
+                </Button>
             </StackPanel>
 
             <TreeView Height="Auto" Name="Book" VerticalAlignment="Stretch" DockPanel.Dock="Top" 

@@ -39,6 +39,12 @@ namespace SolutionBook
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a solution can be closed.
+        /// </summary>
+        public static bool CanClose
+            => !CanOpen;
+
+        /// <summary>
         /// Triggers when the <see cref="CanOpen"/> property changed.
         /// </summary>
         /// <remarks>
