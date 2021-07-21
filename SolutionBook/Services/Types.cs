@@ -19,17 +19,15 @@ namespace SolutionBook.Services
 
         private static Type CreateMruListType(Kind kind)
         {
-            return CreateType($"{kind.ToString()}MruList");
+            return CreateType($"{kind}MruList");
         }
 
         private static Type CreateType(string name)
         {
-            const string Namespace = "Microsoft.VisualStudio.PlatformUI";
-            const string Assembly = "Microsoft.VisualStudio.Shell.UI.Internal";
+            const string @namespace = "Microsoft.VisualStudio.PlatformUI";
+            const string assembly = "Microsoft.VisualStudio.Shell.UI.Internal";
 
-            return Type.GetType(
-                $"{Namespace}.{name}, {Assembly}",
-                throwOnError: true);
+            return Type.GetType($"{@namespace}.{name}, {assembly}", throwOnError: true);
         }
     }
 }

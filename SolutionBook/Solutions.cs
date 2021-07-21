@@ -1,6 +1,7 @@
 ﻿using EnvDTE;
 using System;
 using System.IO;
+using Microsoft.VisualStudio.Shell;
 
 namespace SolutionBook
 {
@@ -15,6 +16,8 @@ namespace SolutionBook
 
         public static void Initialize(DTE dte)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             _dte = dte;
 
             CanOpen = !_dte.Solution.IsOpen;
@@ -61,13 +64,12 @@ namespace SolutionBook
         /// </summary>
         public static bool Open(string path)
         {
-            if (_canOpen && !_dte.Solution.IsOpen && File.Exists(path))
-            {
-                _dte.ExecuteCommand("File.OpenProject", $"\"{path}\"");
-                return true;
-            }
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-            return false;
+            if (!_canOpen || _dte.Solution.IsOpen || !File.Exists(path)) return false;
+
+            _dte.ExecuteCommand("File.OpenProject", $"\"{path}\"");
+            return true;
         }
     }
 }

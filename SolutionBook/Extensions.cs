@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Media;
 
 namespace SolutionBook
@@ -37,9 +40,8 @@ namespace SolutionBook
                 if (returnVal is Visual /*|| returnVal is Visual3D*/)
                     tempReturnVal = VisualTreeHelper.GetParent(returnVal);
 
-                returnVal = tempReturnVal != null
-                    ? tempReturnVal
-                    : LogicalTreeHelper.GetParent(returnVal);
+                returnVal = tempReturnVal ?? LogicalTreeHelper.GetParent(returnVal);
+
                 //if (tempReturnVal == null)
                 //    returnVal = LogicalTreeHelper.GetParent(returnVal);
                 //else returnVal = tempReturnVal;
@@ -64,7 +66,7 @@ namespace SolutionBook
                 for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
                 {
                     var child = VisualTreeHelper.GetChild(obj, i);
-                    if (child is T) return (T)child;
+                    if (child is T childOfTypeT) return childOfTypeT;
 
                     var childItem = VisualDownwardSearch<T>(child);
                     if (childItem != null) return childItem;
@@ -72,6 +74,11 @@ namespace SolutionBook
             }
 
             return null;
+        }
+
+        public static IEnumerable<TResult> Select<TResult>(this IList source, Func<object, TResult> selector)
+        {
+            foreach (var o in source) yield return selector(o);
         }
     }
 }

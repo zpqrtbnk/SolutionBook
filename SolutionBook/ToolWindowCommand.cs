@@ -23,7 +23,7 @@ namespace SolutionBook
         private readonly AsyncPackage _package;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ToolWindow1Command"/> class.
+        /// Initializes a new instance of the <see cref="ToolWindowCommand"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
@@ -33,8 +33,8 @@ namespace SolutionBook
             _package = package ?? throw new ArgumentNullException(nameof(package));
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
-            var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem = new MenuCommand((s, e) => Execute(), menuCommandID);
+            var menuCommandId = new CommandID(CommandSet, CommandId);
+            var menuItem = new MenuCommand((s, e) => Execute(), menuCommandId);
 
             commandService.AddCommand(menuItem);
         }
@@ -67,17 +67,12 @@ namespace SolutionBook
         /// <summary>
         /// Shows the tool window when the menu item is clicked.
         /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
         private void Execute()
         {
-            _package.JoinableTaskFactory.RunAsync(async () =>
+            var _ = _package.JoinableTaskFactory.RunAsync(async () =>
             {
-                ToolWindowPane window = await _package.ShowToolWindowAsync(typeof(ToolWindow), 0, true, _package.DisposalToken);
-                if ((null == window) || (null == window.Frame))
-                {
-                    throw new NotSupportedException("Cannot create tool window");
-                }
+                var window = await _package.ShowToolWindowAsync(typeof(ToolWindow), 0, true, _package.DisposalToken);
+                if (window?.Frame == null) throw new NotSupportedException("Cannot create tool window");
             });
         }
     }

@@ -60,6 +60,8 @@ namespace SolutionBook
         {
             // see https://github.com/microsoft/VSSDK-Extensibility-Samples/tree/master/AsyncToolWindow
 
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
             var dataSourceFactory = await GetServiceAsync(typeof(SVsDataSourceFactory)) as IVsDataSourceFactory;
             var dte = await GetServiceAsync(typeof(DTE)) as DTE;
 

@@ -7,6 +7,7 @@ namespace SolutionBook
 {
     public class ToolWindowState
     {
+        // ReSharper disable once InconsistentNaming
         public DTE DTE { get; set; }
 
         public RecentSource RecentSource { get; set; }

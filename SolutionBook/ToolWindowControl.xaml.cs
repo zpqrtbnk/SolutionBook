@@ -8,15 +8,11 @@ using System.Collections.Generic;
 using Microsoft.Win32;
 using System;
 using System.Windows.Media;
-using System.Windows.Documents;
-using SolutionBook.Services;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Threading;
+using Microsoft.VisualStudio.Shell;
 
 namespace SolutionBook
 {
-    public partial class ToolWindowControl : UserControl
+    public partial class ToolWindowControl // : UserControl
     {
         private readonly ToolWindowState _state;
         private readonly object _booklock = new object();
@@ -35,7 +31,7 @@ namespace SolutionBook
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindowControl"/> class.
         /// </summary>
-        public ToolWindowControl(ToolWindowState state, ToolWindow window)
+        public ToolWindowControl(ToolWindowState state, ToolWindow _)
         {
             InitializeComponent();
 
@@ -55,9 +51,7 @@ namespace SolutionBook
         public void Show()
         {
             var bookItem = Book.SelectedItem as BookItem;
-            var treeViewItem = Book.ItemContainerGenerator.ContainerFromItem(bookItem) as TreeViewItem;
-            
-            if (treeViewItem == null) return;
+            if (!(Book.ItemContainerGenerator.ContainerFromItem(bookItem) is TreeViewItem treeViewItem)) return;
 
             treeViewItem.Focus();
             Keyboard.Focus(treeViewItem);
@@ -86,32 +80,32 @@ namespace SolutionBook
 
         private void BookItem_Expanded(object sender, RoutedEventArgs e)
         {
-            var treeItem = e.OriginalSource as TreeViewItem;
-            var bookItem = treeItem.DataContext as BookItem;
+            var treeItem = sender as MenuItem ?? throw new ArgumentException("Sender is not MenuItem.", nameof(sender));
+            var bookItem = treeItem.DataContext as BookItem ?? throw new ArgumentException("Sender.DataContext is not BookItem..", nameof(sender));
 
             bookItem.IsExpanded = true;
         }
 
         private void BookItem_Collapsed(object sender, RoutedEventArgs e)
         {
-            var treeItem = e.OriginalSource as TreeViewItem;
-            var bookItem = treeItem.DataContext as BookItem;
+            var treeItem = sender as MenuItem ?? throw new ArgumentException("Sender is not MenuItem.", nameof(sender));
+            var bookItem = treeItem.DataContext as BookItem ?? throw new ArgumentException("Sender.DataContext is not BookItem..", nameof(sender));
 
             bookItem.IsExpanded = false;
         }
 
         private void Menu_Open(object sender, RoutedEventArgs e)
         {
-            var treeItem = sender as MenuItem;
-            var bookItem = treeItem.DataContext as BookItem;
+            var treeItem = sender as MenuItem ?? throw new ArgumentException("Sender is not MenuItem.", nameof(sender));
+            var bookItem = treeItem.DataContext as BookItem ?? throw new ArgumentException("Sender.DataContext is not BookItem..", nameof(sender));
 
             Solutions.Open(bookItem.Path);
         }
 
         private void Menu_Rename(object sender, RoutedEventArgs e)
         {
-            var treeItem = sender as MenuItem;
-            var bookItem = treeItem.DataContext as BookItem;
+            var treeItem = sender as MenuItem ?? throw new ArgumentException("Sender is not MenuItem.", nameof(sender));
+            var bookItem = treeItem.DataContext as BookItem ?? throw new ArgumentException("Sender.DataContext is not BookItem..", nameof(sender));
 
             BeginEdit(bookItem);
 
@@ -137,8 +131,8 @@ namespace SolutionBook
 
         private void Menu_AddFolder(object sender, RoutedEventArgs e)
         {
-            var treeItem = sender as MenuItem;
-            var bookItem = treeItem.DataContext as BookItem;
+            var treeItem = sender as MenuItem ?? throw new ArgumentException("Sender is not MenuItem.", nameof(sender));
+            var bookItem = treeItem.DataContext as BookItem ?? throw new ArgumentException("Sender.DataContext is not BookItem..", nameof(sender));
 
             lock (_booklock)
             {
@@ -149,8 +143,8 @@ namespace SolutionBook
 
         private void Menu_AddSolution(object sender, RoutedEventArgs e)
         {
-            var treeItem = sender as MenuItem;
-            var bookItem = treeItem.DataContext as BookItem;
+            var treeItem = sender as MenuItem ?? throw new ArgumentException("Sender is not MenuItem.", nameof(sender));
+            var bookItem = treeItem.DataContext as BookItem ?? throw new ArgumentException("Sender.DataContext is not BookItem..", nameof(sender));
 
             var dialog = new OpenFileDialog
             {
@@ -167,8 +161,8 @@ namespace SolutionBook
 
             var path = dialog.ShowDialog() == true
                 ? dialog.FileName
-                : null; 
-            
+                : null;
+
             if (path != null)
             {
                 lock (_booklock)
@@ -181,8 +175,8 @@ namespace SolutionBook
 
         private void Menu_RemoveFolder(object sender, RoutedEventArgs e)
         {
-            var treeItem = sender as MenuItem;
-            var bookItem = treeItem.DataContext as BookItem;
+            var treeItem = sender as MenuItem ?? throw new ArgumentException("Sender is not MenuItem.", nameof(sender));
+            var bookItem = treeItem.DataContext as BookItem ?? throw new ArgumentException("Sender.DataContext is not BookItem..", nameof(sender));
 
             lock (_booklock)
             {
@@ -198,8 +192,8 @@ namespace SolutionBook
 
         private void Menu_RemoveSolution(object sender, RoutedEventArgs e)
         {
-            var treeItem = sender as MenuItem;
-            var bookItem = treeItem.DataContext as BookItem;
+            var treeItem = sender as MenuItem ?? throw new ArgumentException("Sender is not MenuItem.", nameof(sender));
+            var bookItem = treeItem.DataContext as BookItem ?? throw new ArgumentException("Sender.DataContext is not BookItem..", nameof(sender));
 
             lock (_booklock)
             {
@@ -228,17 +222,17 @@ namespace SolutionBook
                     bookItem = panel.DataContext as BookItem;
                     break;
                 case TextBlock text:
-                    bookItem = ((StackPanel)text.Parent).DataContext as BookItem;
+                    bookItem = ((StackPanel) text.Parent).DataContext as BookItem;
                     break;
                 case CrispImage img:
-                    bookItem = ((StackPanel)img.Parent).DataContext as BookItem;
+                    bookItem = ((StackPanel) img.Parent).DataContext as BookItem;
                     break;
                 default:
                     return;
             }
 
             // do nothing, will expand/collapse
-            if (bookItem.Type == BookItemType.Folder || bookItem.Type == BookItemType.Recents)
+            if (bookItem == null || bookItem.Type == BookItemType.Folder || bookItem.Type == BookItemType.Recents)
                 return;
 
             // prevent double-click and expand/collapse
@@ -282,7 +276,7 @@ namespace SolutionBook
                     break;
                 case Key.Return: // also .Enter
                     treeViewItem = textBox.VisualUpwardSearch<TreeViewItem>();
-                    EndEdit(textBox.Text);
+                    if (textBox != null) EndEdit(textBox.Text);
                     break;
             }
 
@@ -298,14 +292,13 @@ namespace SolutionBook
         {
             // do nothing but somehow, without this, arrows etc don't work in the textbox?
 
-            if (e.Key == Key.F2)
-            {
-                var treeView = sender as TreeView;
-                var bookItem = treeView.SelectedItem as BookItem;
+            if (e.Key != Key.F2) return;
 
-                if (bookItem.Type == BookItemType.Folder || bookItem.Type == BookItemType.Solution)
-                    BeginEdit(bookItem);
-            }
+            var treeView = sender as TreeView;
+            var bookItem = treeView?.SelectedItem as BookItem;
+
+            if (bookItem != null && bookItem.Type == BookItemType.Folder || bookItem.Type == BookItemType.Solution)
+                BeginEdit(bookItem);
 
             //System.Diagnostics.Debug.WriteLine("Key: " + e.Key);
             //System.Diagnostics.Debug.WriteLine("Focus: " + FocusManager.GetFocusedElement(Book));
@@ -331,7 +324,7 @@ namespace SolutionBook
             if (e.LeftButton != MouseButtonState.Pressed)
                 return;
 
-            // Note: This should be based on some accessibility number and not just 2 pixels 
+            // Note: This should be based on some accessibility number and not just 2 pixels
             const double trigger = 2.0;
             var currentPosition = e.GetPosition(Book);
             var dx = Math.Abs(currentPosition.X - _lastMouseDown.X);
@@ -433,7 +426,7 @@ namespace SolutionBook
                     _adorned.Background = DragDropAdorner.Transparent;
                     _adorned = null;
                 }
-                
+
                 if (element == null) return;
 
                 //Debug.WriteLine("set background");
@@ -478,8 +471,7 @@ namespace SolutionBook
             //var height = treeViewItem.ActualHeight;
             var height = presenter.ActualHeight;
 
-            var targetBookItem = treeViewItem.Header as BookItem;
-            if (targetBookItem == null) return 0;
+            if (!(treeViewItem.Header is BookItem targetBookItem)) return 0;
 
             var a = 0;
             switch (targetBookItem.Type)
@@ -504,15 +496,15 @@ namespace SolutionBook
             e.Handled = true;
 
             lock (_adornlock)
-            { 
-                var target = e.OriginalSource as UIElement;
-                var targetTreeViewItem = target == null ? null : GetNearestContainer(target);
-                var targetBookItem = targetTreeViewItem == null ? null : targetTreeViewItem.Header as BookItem;
+            {
+                var targetTreeViewItem = e.OriginalSource is UIElement target ? GetNearestContainer(target) : null;
                 var relative = targetTreeViewItem == null ? 0 : GetRelative(targetTreeViewItem, e);
 
                 //Debug.WriteLine("check " + targetBookItem?.Header);
 
-                if (targetBookItem == null || targetBookItem == _sourceItem || !IsValidDropTarget(targetBookItem, relative))
+                if (!(targetTreeViewItem?.Header is BookItem targetBookItem) ||
+                    targetBookItem == _sourceItem
+                    || !IsValidDropTarget(targetBookItem, relative))
                 {
                     //Debug.WriteLine("nothing");
                     e.Effects = DragDropEffects.None;
@@ -526,7 +518,7 @@ namespace SolutionBook
 
         private double GetWidth(BookItem target, TreeViewItem targetViewItem, int relative)
         {
-            var index = target.Parent == null 
+            var index = target.Parent == null
                 ? Book.Items.IndexOf(target)
                 : target.Parent.Items.IndexOf(target);
 
@@ -548,7 +540,7 @@ namespace SolutionBook
             //Debug.WriteLine("W: " + target.Header + " - " + other.Header);
 
             var targetPresenter = GetPresenter(targetViewItem);
-            var otherViewItem = GetContainerFromItem(other) as TreeViewItem;
+            var otherViewItem = GetContainerFromItem(other);
             var otherPresenter = GetPresenter(otherViewItem);
 
             var offset = targetPresenter.TranslatePoint(new Point(0, 0), targetViewItem).X;
@@ -556,7 +548,7 @@ namespace SolutionBook
             return offset + Math.Max(otherPresenter.DesiredSize.Width, targetPresenter.DesiredSize.Width);
         }
 
-        private ContentPresenter GetPresenter(TreeViewItem treeViewItem)
+        private static ContentPresenter GetPresenter(TreeViewItem treeViewItem)
         {
             var grid = VisualTreeHelper.GetChild(treeViewItem, 0);
             var border = VisualTreeHelper.GetChild(grid, 1);
@@ -570,7 +562,7 @@ namespace SolutionBook
             e.Effects = DragDropEffects.None;
             e.Handled = true;
 
-            // Verify that this is a valid drop and then store the drop target 
+            // Verify that this is a valid drop and then store the drop target
             var container = GetNearestContainer(e.OriginalSource as UIElement);
             if (container == null)
                 return;
@@ -588,7 +580,7 @@ namespace SolutionBook
             e.Effects = DragDropEffect;
         }
 
-        private bool IsDescendant(BookItem item, BookItem parent)
+        private static bool IsDescendant(BookItem item, BookItem parent)
         {
             while (item != null)
             {
@@ -598,7 +590,7 @@ namespace SolutionBook
             return false;
         }
 
-        private bool CanBeDragged(BookItem bookItem)
+        private static bool CanBeDragged(BookItem bookItem)
         {
             if (bookItem == null)
                 return false;
@@ -657,25 +649,25 @@ namespace SolutionBook
 
         private int GetItemIndex(BookItem item)
         {
-            return item.Parent == null ? Book.Items.IndexOf(item) : item.Parent.Items.IndexOf(item);
+            return item.Parent?.Items.IndexOf(item) ?? Book.Items.IndexOf(item);
         }
 
         private TreeViewItem GetContainerFromItem(BookItem item)
         {
-            var _stack = new Stack<BookItem>();
-            _stack.Push(item);
+            var stack = new Stack<BookItem>();
+            stack.Push(item);
             var parent = item.Parent;
 
             while (parent != null)
             {
-                _stack.Push(parent);
+                stack.Push(parent);
                 parent = parent.Parent;
             }
 
             ItemsControl container = Book;
-            while ((_stack.Count > 0) && (container != null))
+            while ((stack.Count > 0) && (container != null))
             {
-                BookItem top = _stack.Pop();
+                BookItem top = stack.Pop();
                 container = (ItemsControl)container.ItemContainerGenerator.ContainerFromItem(top);
             }
 
@@ -776,19 +768,21 @@ namespace SolutionBook
 
         private void OpenSolution_Click(object sender, RoutedEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             _state.DTE.ExecuteCommand("File.OpenProject");
         }
 
         private void CloseSolution_Click(object sender, RoutedEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             _state.DTE.ExecuteCommand("File.CloseSolution");
         }
 
-        private TreeViewItem GetNearestContainer(UIElement element)
+        private static TreeViewItem GetNearestContainer(UIElement element)
         {
-            // Walk up the element tree to the nearest tree view item. 
+            // Walk up the element tree to the nearest tree view item.
             var container = element as TreeViewItem;
-            while ((container == null) && (element != null))
+            while (container == null && element != null)
             {
                 element = VisualTreeHelper.GetParent(element) as UIElement;
                 container = element as TreeViewItem;
