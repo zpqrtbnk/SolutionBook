@@ -7,8 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionBook.2019", "Soluti
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SolutionBook", "SolutionBook\SolutionBook.shproj", "{D80E486E-6B7C-4652-86D7-62772AFAB884}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionBook.2022", "SolutionBook.2022\SolutionBook.2022.csproj", "{1A72DCD0-72C9-4041-A7C2-8022A676062A}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		SolutionBook\SolutionBook.projitems*{1a72dcd0-72c9-4041-a7c2-8022a676062a}*SharedItemsImports = 4
 		SolutionBook\SolutionBook.projitems*{7050c591-2b7c-4c46-9902-e20fd0531599}*SharedItemsImports = 4
 		SolutionBook\SolutionBook.projitems*{d80e486e-6b7c-4652-86d7-62772afab884}*SharedItemsImports = 13
 	EndGlobalSection
@@ -21,6 +24,10 @@ Global
 		{7050C591-2B7C-4C46-9902-E20FD0531599}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7050C591-2B7C-4C46-9902-E20FD0531599}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7050C591-2B7C-4C46-9902-E20FD0531599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

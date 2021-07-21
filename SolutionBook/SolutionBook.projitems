@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Types.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolutionBookPackage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolutionBookSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\SolutionInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Solutions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToolWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToolWindowCommand.cs" />
@@ -43,6 +44,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Properties\" />
     <Folder Include="$(MSBuildThisFileDirectory)Resources\" />
   </ItemGroup>
 </Project>
