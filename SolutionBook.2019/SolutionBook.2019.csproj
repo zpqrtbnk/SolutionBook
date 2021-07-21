@@ -67,16 +67,15 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <VSCTCompile Include="SolutionBookPackage.vsct" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.200" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.2.24" />
   </ItemGroup>
   <ItemGroup>
-    <VSCTCompile Include="..\SolutionBook\SolutionBookPackage.vsct">
-      <Link>SolutionBookPackage.vsct</Link>
-    </VSCTCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="icon.png">
+    <Content Include="..\Resources\icon.png">
+      <Link>icon.png</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
   </ItemGroup>

@@ -9,6 +9,11 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SolutionBook", "SolutionBoo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionBook.2022", "SolutionBook.2022\SolutionBook.2022.csproj", "{1A72DCD0-72C9-4041-A7C2-8022A676062A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{E001AF43-3A05-40C1-BB18-F233308A95EB}"
+	ProjectSection(SolutionItems) = preProject
+		Resources\icon.png = Resources\icon.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		SolutionBook\SolutionBook.projitems*{1a72dcd0-72c9-4041-a7c2-8022a676062a}*SharedItemsImports = 4

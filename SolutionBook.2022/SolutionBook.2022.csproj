@@ -66,6 +66,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <VSCTCompile Include="SolutionBookPackage.vsct" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.0-previews-2-31512-422" ExcludeAssets="runtime">
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -75,7 +78,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="icon.png">
+    <Content Include="..\Resources\icon.png">
+      <Link>icon.png</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
   </ItemGroup>

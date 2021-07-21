@@ -7,7 +7,7 @@
 
   <Commands package="guidVSIXProject1Package">
     <Buttons>
-      <Button guid="guidVSIXProject1PackageCmdSet" id="ToolWindow1CommandId" priority="0x0100" type="Button">
+      <Button guid="guidVSIXProject1PackageCmdSet" id="ToolWindowCommandId" priority="0x0100" type="Button">
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
         <Icon guid="ImageCatalogGuid" id="Solution" />
         <CommandFlag>IconIsMoniker</CommandFlag>
@@ -21,7 +21,7 @@
   <Symbols>
     <GuidSymbol name="guidVSIXProject1Package" value="{408c3e79-bd20-415c-887c-1e69842467a3}" />
     <GuidSymbol name="guidVSIXProject1PackageCmdSet" value="{68844eaa-105e-49f4-8116-1a114f1dee03}">
-      <IDSymbol name="ToolWindow1CommandId" value="0x0100" />
+      <IDSymbol name="ToolWindowCommandId" value="0x0100" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>
