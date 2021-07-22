@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28917.182
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31512.422
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionBook.2019", "SolutionBook.2019\SolutionBook.2019.csproj", "{7050C591-2B7C-4C46-9902-E20FD0531599}"
 EndProject
@@ -31,10 +31,10 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{7050C591-2B7C-4C46-9902-E20FD0531599}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7050C591-2B7C-4C46-9902-E20FD0531599}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7050C591-2B7C-4C46-9902-E20FD0531599}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7050C591-2B7C-4C46-9902-E20FD0531599}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
