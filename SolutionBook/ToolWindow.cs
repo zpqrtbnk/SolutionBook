@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Imaging;
 using System.Threading.Tasks;
+using SolutionBook.Models;
 using Task = System.Threading.Tasks.Task;
 
 namespace SolutionBook
@@ -11,18 +12,13 @@ namespace SolutionBook
     {
         public const string WindowGuidString = "db30685e-ef09-41a2-ae16-a33e67f1e802";
         public const string Title = "SolutionBook";
-
         private const string WindowObjectKind = "{" + WindowGuidString + "}";
 
-        //private ToolWindowState _state;
-
-        public ToolWindow(ToolWindowState state)
+        public ToolWindow(ToolWindowState state) // requires the UI thread
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread(); // DTE requires the UI thread
 
-            //_state = state;
-
-            Caption = "SolutionBook - Initializing";
+            Caption = "SolutionBook";
 
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on the object
@@ -30,13 +26,6 @@ namespace SolutionBook
 
             var content = new ToolWindowControl(state, this);
             Content = content;
-
-            var _ = Task.Run(state.GetAll)
-                .ContinueWith(x =>
-                {
-                    content.Populate(x.Result);
-                    Caption = "SolutionBook";
-                }, TaskScheduler.FromCurrentSynchronizationContext());
 
             // icon
             BitmapImageMoniker = KnownMonikers.Solution;
@@ -46,7 +35,14 @@ namespace SolutionBook
             dteEvents.WindowVisibilityEvents.WindowShowing += window =>
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
-                if (window.ObjectKind.ToLowerInvariant() == WindowObjectKind) content.Show();
+                // window here is a DTE thing, not directly our own ToolWindow
+                // window.Object *is* our own ToolWindow
+                if (window.ObjectKind.ToLowerInvariant() == WindowObjectKind &&
+                    window.Object is ToolWindow toolWindow &&
+                    toolWindow.Content is ToolWindowControl control)
+                {
+                    control.Show();
+                }
             };
         }
     }

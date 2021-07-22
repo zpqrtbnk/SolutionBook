@@ -4,16 +4,18 @@ using System.ComponentModel;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.Imaging;
 using System.Diagnostics;
+using System.IO;
 
-namespace SolutionBook
+namespace SolutionBook.Models
 {
     /// <summary>
     /// Represents a solution book item.
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     public class BookItem : INotifyPropertyChanged
     {
         private bool _isExpanded;
+        private bool _isSelected;
         private bool _isEditing;
         private string _header;
 
@@ -31,6 +33,8 @@ namespace SolutionBook
 
             Type = type;
             Path = path;
+
+            Exists = File.Exists(path);
         }
 
         /// <summary>
@@ -49,17 +53,17 @@ namespace SolutionBook
             {
                 switch (Type)
                 {
-                    case BookItemType.Recents:
-                        return "Recents";
+                    case BookItemType.RecentFolder:
+                        return "{RecentFolder}";
                     case BookItemType.Folder:
                         return "{Folder:" + Header + "}";
-                    case BookItemType.Recent:
-                        return "{Recent:" + Header + "}";
+                    case BookItemType.RecentSolution:
+                        return "{RecentSolution:" + Header + "}";
                     case BookItemType.Solution:
                         return "{Solution:" + Header + "}";
+                    default:
+                        return "{?}";
                 }
-
-                return "{?}";
             }
         }
 
@@ -74,9 +78,7 @@ namespace SolutionBook
         /// <para>The cloned item is *not* added to the new parent.</para>
         /// </remarks>
         public BookItem Clone(BookItem newParent, BookItemType newType)
-        {
-            return new BookItem(newParent, newType, Path, Items) { Header = Header };
-        }
+            => new BookItem(newParent, newType, Path, Items) { Header = Header };
 
         /// <inheritdoc />
         public event PropertyChangedEventHandler PropertyChanged;
@@ -117,6 +119,9 @@ namespace SolutionBook
         /// </remarks>
         public string Path { get; }
 
+        // whether the file exists at the time the item was created
+        public bool Exists { get; }
+
         /// <summary>
         /// Gets or sets the collection of child items of this item.
         /// </summary>
@@ -137,6 +142,19 @@ namespace SolutionBook
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the item is selected.
+        /// </summary>
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                _isSelected = value;
+                OnPropertyChanged(nameof(IsSelected));
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the item is being edited.
         /// </summary>
         public bool IsEditing
@@ -152,16 +170,16 @@ namespace SolutionBook
         /// <summary>
         /// Gets the icon image moniker for this item.
         /// </summary>
-        public ImageMoniker Icon 
+        public ImageMoniker Icon
         {
             get
             {
                 switch (Type)
                 {
                     case BookItemType.Folder:
-                    case BookItemType.Recents:
+                    case BookItemType.RecentFolder:
                         return _isExpanded ? KnownMonikers.FolderOpened : KnownMonikers.FolderClosed;
-                    case BookItemType.Recent:
+                    case BookItemType.RecentSolution:
                     case BookItemType.Solution:
                         return KnownMonikers.Solution;
                     default:
@@ -173,12 +191,6 @@ namespace SolutionBook
         /// <summary>
         /// Gets the font weight for this item.
         /// </summary>
-        public FontWeight Weight
-        {
-            get
-            {
-                return Parent == null ? FontWeights.Bold : FontWeights.Normal;
-            }
-        }
+        public FontWeight Weight => Parent == null ? FontWeights.Bold : FontWeights.Normal;
     }
 }

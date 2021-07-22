@@ -6,6 +6,8 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using SolutionBook.Services;
+using SolutionBook.Models;
+using System.ComponentModel.Design;
 using Task = System.Threading.Tasks.Task;
 
 namespace SolutionBook
@@ -14,15 +16,14 @@ namespace SolutionBook
     /// Represents the package exposed by this assembly.
     /// </summary>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [Guid(PackageGuidString)]
-    [ProvideMenuResource("Menus.ctmenu", 1)]
+    [Guid(Constants.PackageGuidString)]
+    [ProvideMenuResource(Constants.ProviderMenuResourceId, Constants.ProviderMenuResourceVersion)]
     [ProvideToolWindow(typeof(ToolWindow))]
     public sealed class SolutionBookPackage : AsyncPackage
     {
-        /// <summary>
-        /// Gets the package Guid string.
-        /// </summary>
-        public const string PackageGuidString = "408c3e79-bd20-415c-887c-1e69842467a3";
+        private ToolWindowCommand _toolWindowCommand;
+
+        // see https://github.com/microsoft/VSSDK-Extensibility-Samples/tree/master/AsyncToolWindow
 
         /// <summary>
         /// Initializes the package.
@@ -37,10 +38,16 @@ namespace SolutionBook
         /// </remarks>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            // When initialized asynchronously, the current thread may be a background thread at this point.
-            // Do any initialization that requires the UI thread after switching to the UI thread.
+            // when initialized asynchronously, the current thread may be a background thread at this point.
+            // do any initialization that requires the UI thread after switching to the UI thread.
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-            await ToolWindowCommand.InitializeAsync(this);
+
+            // create the singleton tool window
+            _toolWindowCommand = new ToolWindowCommand(this);
+
+            // register the command with the command service
+            var commandService = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+            _toolWindowCommand.RegisterWith(commandService);
         }
 
         /// <inheritdoc />
@@ -58,18 +65,16 @@ namespace SolutionBook
         /// <inheritdoc />
         protected override async Task<object> InitializeToolWindowAsync(Type toolWindowType, int id, CancellationToken cancellationToken)
         {
-            // see https://github.com/microsoft/VSSDK-Extensibility-Samples/tree/master/AsyncToolWindow
-
-            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-
+#pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread - we're not invoking them here
             var dataSourceFactory = await GetServiceAsync(typeof(SVsDataSourceFactory)) as IVsDataSourceFactory;
             var dte = await GetServiceAsync(typeof(DTE)) as DTE;
+#pragma warning restore VSTHRD010
 
-            return new ToolWindowState 
+            return new ToolWindowState
             {
-                RecentSource = new RecentSource(dataSourceFactory), 
-                ItemSource = new SolutionBookSettings(), 
-                DTE = dte 
+                RecentSource = new RecentSource(dataSourceFactory),
+                ItemSource = new SolutionBookSettings(),
+                DTE = dte
             };
         }
     }

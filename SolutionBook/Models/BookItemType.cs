@@ -1,4 +1,4 @@
-﻿namespace SolutionBook
+﻿namespace SolutionBook.Models
 {
     /// <summary>
     /// Defines the book item types.
@@ -6,14 +6,14 @@
     public enum BookItemType
     {
         /// <summary>
-        /// The 'Recents' folder.
+        /// The recent solutions folder.
         /// </summary>
-        Recents,
+        RecentFolder,
 
         /// <summary>
-        /// A solution within the 'Recents' folder.
+        /// A solution within the recent solutions folder.
         /// </summary>
-        Recent,
+        RecentSolution,
 
         /// <summary>
         /// A folder.

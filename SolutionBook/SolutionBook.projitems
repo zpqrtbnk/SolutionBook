@@ -9,8 +9,9 @@
     <Import_RootNamespace>SolutionBook</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)BookItem.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)BookItemType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\BookItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\BookItemType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DragDropAdorner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Kind.cs" />
@@ -25,7 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ToolWindowState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ToolWindowState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TryCatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UiColors.cs" />
   </ItemGroup>
@@ -36,6 +37,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Models\" />
     <Folder Include="$(MSBuildThisFileDirectory)Properties\" />
   </ItemGroup>
 </Project>

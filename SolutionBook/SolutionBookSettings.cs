@@ -1,119 +1,116 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using SolutionBook.Models;
 
 namespace SolutionBook
 {
-    /// <summary>
-    /// Represents the settings.
-    /// </summary>
     public class SolutionBookSettings
     {
-        /// <summary>
-        /// Gets the items from the settings.
-        /// </summary>
-        public IList<BookItem> Load()
+        private static readonly string SettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SolutionBook.settings");
+
+        private readonly FileSystemWatcher _watcher;
+
+        public SolutionBookSettings()
         {
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SolutionBook.settings");
-
-            if (!File.Exists(path))
-                return new List<BookItem>();
-
-            void Read(IEnumerable<XElement> elements, ICollection<BookItem> items, BookItem parent)
-            {
-                foreach (var element in elements)
-                {
-                    if (element.Name == "Solution")
-                    {
-                        items.Add(new BookItem(parent, BookItemType.Solution, element.Attribute("path").Value) { Header = element.Attribute("name").Value });
-                    }
-                    else
-                    {
-                        var folder = new BookItem(parent, BookItemType.Folder) { Header = element.Attribute("name").Value };
-                        items.Add(folder);
-                        Read(element.Elements(), folder.Items, folder);
-                    }
-                }
-            }
-
-            XDocument document = null;
-            var attempts = 0;
-            while (document == null && attempts++ < 8)
-            {
-                try
-                {
-                    using (var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None))
-                    {
-                        document = XDocument.Load(stream);
-                    }
-                }
-                catch
-                {
-                    Thread.Sleep(250);
-                }
-            }
-
-            var settingItems = new List<BookItem>();
-
-            if (document != null)
-                Read(document.Root.Elements(), settingItems, null);
-
-            return settingItems;
+            _watcher = new FileSystemWatcher(Path.GetDirectoryName(SettingsPath), Path.GetFileName(SettingsPath));
+            _watcher.Changed += (sender, arg) => Changed?.Invoke(this, EventArgs.Empty);
+            _watcher.EnableRaisingEvents = true;
         }
 
-        /// <summary>
-        /// Saves the items in the settings.
-        /// </summary>
-        public void Save(IEnumerable<BookItem> items)
+        public event EventHandler Changed;
+
+        private static void ReadXml(IEnumerable<XElement> elements, ICollection<BookItem> items, BookItem parent = null)
         {
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SolutionBook.settings");
-            
-            void Write(XElement elements, IEnumerable<BookItem> eitems)
+            foreach (var element in elements)
             {
-                foreach (var item in eitems)
+                if (element.Name == "Solution")
                 {
-                    if (item.Type == BookItemType.Solution)
-                    {
-                        var element = new XElement("Solution");
-                        element.Add(new XAttribute("name", item.Header));
-                        element.Add(new XAttribute("path", item.Path));
-                        elements.Add(element);
-                    }
-                    else
-                    {
-                        var element = new XElement("Folder");
-                        element.Add(new XAttribute("name", item.Header));
-                        elements.Add(element);
-                        Write(element, item.Items);
-                    }
+                    items.Add(new BookItem(parent, BookItemType.Solution, element.Attribute("path").Value) { Header = element.Attribute("name").Value });
+                }
+                else
+                {
+                    var folder = new BookItem(parent, BookItemType.Folder) { Header = element.Attribute("name").Value };
+                    items.Add(folder);
+                    ReadXml(element.Elements(), folder.Items, folder);
                 }
             }
+        }
+
+        public async Task<IList<BookItem>> LoadAsync(string path = null)
+        {
+            if (string.IsNullOrWhiteSpace(path)) path = SettingsPath;
+
+            if (!File.Exists(path)) return new List<BookItem>();
+
+            var (success, result) = await TryCatch.RetryAsync(async () =>
+            {
+                using (var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None))
+                using (var reader = new StreamReader(stream))
+                {
+                    return await reader.ReadToEndAsync().ConfigureAwait(false);
+                }
+            }, 250, 4_000).ConfigureAwait(false); // try every 250ms for max 4s
+
+            if (!success) return new List<BookItem>();
+
+            XDocument document;
+            try
+            {
+                var settingItems = new List<BookItem>();
+                document = XDocument.Parse(result);
+                ReadXml(document.Root.Elements(), settingItems);
+                return settingItems;
+            }
+            catch
+            {
+                return new List<BookItem>();
+            }
+        }
+
+        private static void WriteXml(XElement elements, IEnumerable<BookItem> items)
+        {
+            foreach (var item in items)
+            {
+                if (item.Type == BookItemType.Solution)
+                {
+                    var element = new XElement("Solution");
+                    element.Add(new XAttribute("name", item.Header));
+                    element.Add(new XAttribute("path", item.Path));
+                    elements.Add(element);
+                }
+                else
+                {
+                    var element = new XElement("Folder");
+                    element.Add(new XAttribute("name", item.Header));
+                    elements.Add(element);
+                    WriteXml(element, item.Items);
+                }
+            }
+        }
+
+        public async Task SaveAsync(IEnumerable<BookItem> items, string path = null)
+        {
+            if (string.IsNullOrWhiteSpace(path)) path = SettingsPath;
 
             var document = new XDocument();
             var book = new XElement("SolutionBook");
             document.Add(book);
 
-            Write(book, items);
+            WriteXml(book, items);
 
-            var attempts = 0;
+            var text = document.ToString(SaveOptions.None);
 
-            while (attempts == 0 && attempts++ < 8)
+            var success = await TryCatch.RetryAsync(async () =>
             {
-                try
+                using (var stream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var writer = new StreamWriter(stream))
                 {
-                    using (var stream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None))
-                    {
-                        document.Save(stream, SaveOptions.None);
-                    }
+                    await writer.WriteAsync(text).ConfigureAwait(false);
                 }
-                catch
-                {
-                    Thread.Sleep(250);
-                }
-            }
+            }, 250, 4_000).ConfigureAwait(false); // try every 250ms for max 4s
         }
     }
 }

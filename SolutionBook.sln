@@ -14,6 +14,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{
 		Resources\icon.png = Resources\icon.png
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{68352220-B04D-4A69-AAC8-311AD471EF21}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		SolutionBook\SolutionBook.projitems*{1a72dcd0-72c9-4041-a7c2-8022a676062a}*SharedItemsImports = 4
@@ -30,7 +35,6 @@ Global
 		{7050C591-2B7C-4C46-9902-E20FD0531599}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7050C591-2B7C-4C46-9902-E20FD0531599}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A72DCD0-72C9-4041-A7C2-8022A676062A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

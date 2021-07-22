@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.Shell;
 
 namespace SolutionBook.Services
 {
@@ -35,7 +34,7 @@ namespace SolutionBook.Services
             // see also ~/AppData/Local/Microsoft/VisualStudio/.../ApplicationPrivateSettings.xml
             // which 'seems' to contain some recent stuff (and better than using the bin thing there?
 
-            ThreadHelper.ThrowIfNotOnUIThread();
+            //ThreadHelper.ThrowIfNotOnUIThread();
 
             factory.GetDataSource(RecentSourceId, (uint) Kind.Project, out var dataSource);
 

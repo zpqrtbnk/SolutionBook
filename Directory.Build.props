@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+
+        <!-- use VersionRevision to create different versions of the same VersionPrefix for VSIX testing -->
+        <!--
+          BEWARE!
+          - changes in this file are not always detected, REBUILD the solution to be sure
+          - be sure to Debug-build only ONE of the 2019/2022 extensions else both goes to the EXP instance
+          - and then rebuilding might not be enough, CLOSE AND RE-OPEN the solution may be required?!
+
+          see also:
+          - files in ~/AppData/Local/Microsoft/VisualStudio/16.0_81693759Exp/Extensions/
+          - cmd /c devenv.exe /rootsuffix Exp /updateconfiguration
+        -->
+
+        <VersionPrefix>1.2.4</VersionPrefix>
+        <VersionRevision>10</VersionRevision>
+        <VersionSuffix></VersionSuffix>
+
+        <Authors>Pilotine / Stephane Gay / ZpqrtBnk</Authors>
+        <Product>SolutionBook</Product>
+        <Company>Pilotine</Company>
+        <Copyright>Copyright (C) 2020-2021 Pilotine / Stephane Gay / ZpqrtBnk</Copyright>
+        <Title>SolutionBook</Title>
+        <Owners>Pilotine / Stephane Gay / ZpqrtBnk</Owners>
+
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AssemblyAttributes Include="AssemblyVersion">
+          <_Parameter1>$(VersionPrefix).$(VersionRevision)</_Parameter1>
+        </AssemblyAttributes>
+        <AssemblyAttributes Include="AssemblyFileVersion">
+          <_Parameter1>$(VersionPrefix).$(VersionRevision)</_Parameter1>
+        </AssemblyAttributes>
+        <AssemblyAttributes Include="AssemblyInformationalVersion" Condition="'$(VersionSuffix)'!=''">
+          <_Parameter1>$(VersionPrefix).$(VersionRevision)-$(VersionSuffix)</_Parameter1>
+        </AssemblyAttributes>
+        <AssemblyAttributes Include="AssemblyInformationalVersion" Condition="'$(VersionSuffix)'==''">
+          <_Parameter1>$(VersionPrefix).$(VersionRevision)</_Parameter1>
+        </AssemblyAttributes>
+        <AssemblyAttributes Include="AssemblyTitle">
+          <_Parameter1>$(Title)</_Parameter1>
+        </AssemblyAttributes>
+        <AssemblyAttributes Include="AssemblyCompany">
+          <_Parameter1>$(Company)</_Parameter1>
+        </AssemblyAttributes>
+        <AssemblyAttributes Include="AssemblyProduct">
+          <_Parameter1>$(Product)</_Parameter1>
+        </AssemblyAttributes>
+        <AssemblyAttributes Include="AssemblyCopyright">
+          <_Parameter1>$(Copyright)</_Parameter1>
+        </AssemblyAttributes>
+    </ItemGroup>
+
+    <Target Name="GetVsixVersion" Outputs="$(VersionPrefix).$(VersionRevision)" />
+
+    <Target Name="WriteAssemblyInfo" BeforeTargets="BeforeBuild" >
+        <Message Text="Clearing existing AssemblyInfo.generated.cs file." Importance="High" />
+        <Delete Files="$(MSBuildProjectDirectory)\Properties\AssemblyInfo.generated.cs" Condition="Exists('Properties\AssemblyInfo.generated.cs')" />
+        <Message Text="Generating new AssemblyInfo.generated.cs file, version=$(VersionPrefix).$(VersionRevision)." Importance="High" />
+        <WriteCodeFragment Language="C#"
+            OutputFile="$(MSBuildProjectDirectory)\Properties\AssemblyInfo.generated.cs"
+            AssemblyAttributes="@(AssemblyAttributes)" />
+        <Error Text="File AssemblyInfo.generated.cs has not been generated." Condition="!Exists('Properties\AssemblyInfo.generated.cs')" />
+        <Message Text="Done" Importance="High" />
+    </Target>
+
+</Project>
