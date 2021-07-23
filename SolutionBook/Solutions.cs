@@ -1,9 +1,7 @@
 ﻿using EnvDTE;
-using System;
 using System.IO;
 using Microsoft.VisualStudio.Shell;
 using System.ComponentModel;
-using System.Windows.Data;
 
 namespace SolutionBook
 {
@@ -30,12 +28,8 @@ namespace SolutionBook
 
             _canOpen = !_dte.Solution.IsOpen;
 
-            // FIXME
-            // - the DTE events below do not seem to trigger?!
-            // - the binding to CanOpen/CanClose does not work
-
             // see: https://docs.microsoft.com/en-us/dotnet/api/envdte.solutionevents?redirectedfrom=MSDN&view=visualstudiosdk-2019
-            // keep the _solutionEvents around else it's GC and we miss events
+            // keep the _solutionEvents around else it's GC-ed and we miss events
 
             _solutionEvents = _dte.Events.SolutionEvents;
             _solutionEvents.Opened += () => CanOpen = false;

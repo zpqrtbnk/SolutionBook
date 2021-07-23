@@ -127,17 +127,16 @@ namespace SolutionBook
             }
         }
 
-        private void CarryExpand(IEnumerable<BookItem> source, IEnumerable<BookItem> target)
+        private static void CarryExpand(IEnumerable<BookItem> source, IEnumerable<BookItem> target)
         {
             var sourceItems = source.ToDictionary(x => x.Header, x => x);
 
             foreach (var targetItem in target)
             {
-                if (sourceItems.TryGetValue(targetItem.Header, out var sourceItem))
-                {
-                    targetItem.IsExpanded = sourceItem.IsExpanded;
-                    CarryExpand(sourceItem.Items, targetItem.Items);
-                }
+                if (!sourceItems.TryGetValue(targetItem.Header, out var sourceItem)) continue;
+
+                targetItem.IsExpanded = sourceItem.IsExpanded;
+                CarryExpand(sourceItem.Items, targetItem.Items);
             }
         }
 
@@ -239,7 +238,9 @@ namespace SolutionBook
                 bookItem.Items.Add(new BookItem(bookItem, BookItemType.Folder) { Header = "(new folder)" });
             }
             finally { _booksem.Release(); }
-            //Save();
+
+
+            TriggerSave();
         }
 
         private void Menu_AddSolution(object sender, RoutedEventArgs e)
@@ -252,8 +253,7 @@ namespace SolutionBook
                 CheckFileExists = true,
                 CheckPathExists = true,
                 DefaultExt = ".sln",
-                Filter = @"Solution (*.sln)|*.sln"
-                         /*+ @"|All files (*.*)|*.*"*/,
+                Filter = @"Solution (*.sln)|*.sln" /*+ @"|All files (*.*)|*.*"*/,
                 AddExtension = true,
                 Multiselect = false,
                 ValidateNames = true,
@@ -264,16 +264,16 @@ namespace SolutionBook
                 ? dialog.FileName
                 : null;
 
-            if (path != null)
+            if (path == null) return;
+
+            _booksem.Wait();
+            try
             {
-                _booksem.Wait();
-                try
-                {
-                    bookItem.Items.Add(new BookItem(bookItem, BookItemType.Solution, path) { Header = Path.GetFileNameWithoutExtension(path) });
-                }
-                finally { _booksem.Release(); }
-                //Save();
+                bookItem.Items.Add(new BookItem(bookItem, BookItemType.Solution, path) { Header = Path.GetFileNameWithoutExtension(path) });
             }
+            finally { _booksem.Release(); }
+
+            TriggerSave();
         }
 
         private void Menu_RemoveFolder(object sender, RoutedEventArgs e)
@@ -292,7 +292,7 @@ namespace SolutionBook
             }
             finally { _booksem.Release(); }
 
-            //Save();
+            TriggerSave();
         }
 
         private void Menu_RemoveSolution(object sender, RoutedEventArgs e)
@@ -311,7 +311,7 @@ namespace SolutionBook
             }
             finally { _booksem.Release(); }
 
-            //Save();
+            TriggerSave();
         }
 
         private void Book_PreviewMouseLeftDown(object sender, MouseButtonEventArgs e)
@@ -503,7 +503,7 @@ namespace SolutionBook
             _targetRelative = 0;
             _sourceItem = null;
 
-            //Save();
+            TriggerSave();
         }
 
         private DragDropEffects DragDropEffect
@@ -818,7 +818,8 @@ namespace SolutionBook
                 Book.Items.Add(new BookItem(null, BookItemType.Folder) { Header = "(new folder)" });
             }
             finally { _booksem.Release(); }
-            //Save();
+
+            TriggerSave();
         }
 
         private void AddRootSolution_Click(object sender, RoutedEventArgs e)
@@ -841,17 +842,16 @@ namespace SolutionBook
                 ? dialog.FileName
                 : null;
 
-            if (path != null)
-            {
-                _booksem.Wait();
-                try
-                {
-                    Book.Items.Add(new BookItem(null, BookItemType.Solution, path) { Header = Path.GetFileNameWithoutExtension(path) });
-                }
-                finally { _booksem.Release(); }
+            if (path == null) return;
 
-                //Save();
+            _booksem.Wait();
+            try
+            {
+                Book.Items.Add(new BookItem(null, BookItemType.Solution, path) { Header = Path.GetFileNameWithoutExtension(path) });
             }
+            finally { _booksem.Release(); }
+
+            TriggerSave();
         }
 
         private void Save_Click(object sender, RoutedEventArgs e) => TriggerSave();
