@@ -1,18 +1,24 @@
 SolutionBook
 --
 
-Once upon a time there was this excellent extension for Visual Studio, [SolutionStartPage](<https://marketplace.visualstudio.com/items?itemName=Herdo.SolutionStartPage>), which would let you replace the start page with a customizable overview of your solutions. And it was very convenient.
+Once upon a time there was this excellent extension for Visual Studio, [SolutionStartPage](<https://marketplace.visualstudio.com/items?itemName=Herdo.SolutionStartPage>), 
+which would let you replace the start page with a customizable overview of your solutions. And it was very convenient. You can find sources for the project in its own
+[GitHub repository](<https://github.com/Herdo/SolutionStartPage>).
 
-The project lives in its [GitHub repository](<https://github.com/Herdo/SolutionStartPage>).
+And then came Visual Studio 2019, which replaced the start page with a start *window*, entirely breaking SolutionStartPage (see issue 
+[#25](<https://github.com/Herdo/SolutionStartPage/issues/25>)). There were a few discussions about the start page on Visual Studio developer community
+(see [here](<https://developercommunity.visualstudio.com/idea/531110/allow-cutomization-or-extension-of-the-new-start-w.html>)) but Microsoft never really brought it back.
 
-And then came Visual Studio 2019, which replaced the start page with a start *window*, entirely breaking SolutionStartPage (see issue [#25](<https://github.com/Herdo/SolutionStartPage/issues/25>)). There are a few discussions about the start page on Visual Studio developer community (see [here](<https://developercommunity.visualstudio.com/idea/531110/allow-cutomization-or-extension-of-the-new-start-w.html>)) but it does not seem that Microsoft is going to bring it back anytime soon.
-
-So... this is SolutionBook, a replacement for SolutionStartPage for Visual Studio 2019. It installs a new tool window, which can then be displayed with **View** | **Other Windows** | **SolutionBook** and docked anywhere. I dock it to the left, with the already existing **Toolbox** tool window.
+Visual Studio now proposes different ways to manage recent and frequently used solutions, but none that really pleases me. So... this is **SolutionBook**, a solution
+management extension for Visual Studio 2019+. It installs a new tool window, which can then be displayed with **View** | **Other Windows** | **SolutionBook** 
+and docked anywhere. I like to dock it to the left, with the already existing **Toolbox** tool window.
 
 It exposes a treeview of solutions, which can be organized and grouped into folders.
 
-*DISCLAIMERS*
+It automatically saves its structure (to `%USERPROFILE%\AppData\Roaming\SolutionBook.settings`) when needed, and also updates itself whenever that file changes,
+in a way that *should* guarantee safe concurrent usage between multiple instances of Visual Studio.
 
-You have to save your changes, using the toolbar button. Saving is *not* automatic. And the refresh toolbar buttons reloads from what has been saved. This is how concurrency between multiple Visual Studio instances is (not) managed.
+### DISCLAIMER
 
-This was all quickly put together. WPF is hard. There *may* be issues, and the code is probably not the best I've produced. Feel free to comment, suggest, propose changes, etc.
+This was all quickly put together, and then hacked and hacked again. WPF is hard. I am not especially proud of the code. There *may* be issues. It works on my 
+machine and I use it everyday. Feel free to comment, suggest, propose changes, etc.
