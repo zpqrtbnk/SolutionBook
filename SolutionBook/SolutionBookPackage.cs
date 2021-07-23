@@ -1,13 +1,18 @@
-﻿using System;
+﻿// Copyright (C) 2020-2021 Pilotine / Stephane Gay / ZpqrtBnk
+// 
+// Licensed under the MIT License (https://opensource.org/licenses/MIT).
+// You may not use this file except in compliance with the License.
+
+using System;
+using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using SolutionBook.Services;
 using SolutionBook.Models;
-using System.ComponentModel.Design;
+using SolutionBook.Services;
 using Task = System.Threading.Tasks.Task;
 
 namespace SolutionBook

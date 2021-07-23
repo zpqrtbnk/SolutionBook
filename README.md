@@ -18,6 +18,11 @@ It exposes a treeview of solutions, which can be organized and grouped into fold
 It automatically saves its structure (to `%USERPROFILE%\AppData\Roaming\SolutionBook.settings`) when needed, and also updates itself whenever that file changes,
 in a way that *should* guarantee safe concurrent usage between multiple instances of Visual Studio.
 
+### INSTALL
+
+The extension is available through the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ZpqrtBnk.SolutionBook) and can be installed
+in Visual Studio via the **EXTENSIONS** | **Manage Extensions** menu. Search for "SolutionBook" in online extensions.
+
 ### DISCLAIMER
 
 This was all quickly put together, and then hacked and hacked again. WPF is hard. I am not especially proud of the code. There *may* be issues. It works on my 

@@ -1,9 +1,12 @@
-﻿using System.Runtime.InteropServices;
-using Microsoft.VisualStudio.Shell;
+﻿// Copyright (C) 2020-2021 Pilotine / Stephane Gay / ZpqrtBnk
+// 
+// Licensed under the MIT License (https://opensource.org/licenses/MIT).
+// You may not use this file except in compliance with the License.
+
+using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Imaging;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using SolutionBook.Models;
-using Task = System.Threading.Tasks.Task;
 
 namespace SolutionBook
 {

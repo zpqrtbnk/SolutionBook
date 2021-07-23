@@ -1,16 +1,21 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+﻿// Copyright (C) 2020-2021 Pilotine / Stephane Gay / ZpqrtBnk
+// 
+// Licensed under the MIT License (https://opensource.org/licenses/MIT).
+// You may not use this file except in compliance with the License.
+
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.VisualStudio.Imaging;
-using System.Collections.Generic;
-using Microsoft.Win32;
-using System;
-using System.Windows.Media;
-using Microsoft.VisualStudio.Shell;
-using SolutionBook.Models;
 using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.Win32;
+using SolutionBook.Models;
 using Task = System.Threading.Tasks.Task;
 
 namespace SolutionBook

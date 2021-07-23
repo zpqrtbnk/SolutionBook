@@ -1,10 +1,15 @@
-﻿using System.Windows;
+﻿// Copyright (C) 2020-2021 Pilotine / Stephane Gay / ZpqrtBnk
+// 
+// Licensed under the MIT License (https://opensource.org/licenses/MIT).
+// You may not use this file except in compliance with the License.
+
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Microsoft.VisualStudio.Imaging.Interop;
-using Microsoft.VisualStudio.Imaging;
 using System.Diagnostics;
 using System.IO;
+using System.Windows;
+using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.Imaging.Interop;
 
 namespace SolutionBook.Models
 {

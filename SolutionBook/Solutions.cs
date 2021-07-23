@@ -1,7 +1,12 @@
-﻿using EnvDTE;
-using System.IO;
-using Microsoft.VisualStudio.Shell;
+﻿// Copyright (C) 2020-2021 Pilotine / Stephane Gay / ZpqrtBnk
+// 
+// Licensed under the MIT License (https://opensource.org/licenses/MIT).
+// You may not use this file except in compliance with the License.
+
 using System.ComponentModel;
+using System.IO;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 
 namespace SolutionBook
 {
