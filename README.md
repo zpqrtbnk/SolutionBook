@@ -13,6 +13,8 @@ Visual Studio now proposes different ways to manage recent and frequently used s
 management extension for Visual Studio 2019+. It installs a new tool window, which can then be displayed with **View** | **Other Windows** | **SolutionBook** 
 and docked anywhere. I like to dock it to the left, with the already existing **Toolbox** tool window.
 
+![screenshot](https://github.com/zpqrtbnk/SolutionBook/raw/master/Resources/screenshot.png)
+
 It exposes a treeview of solutions, which can be organized and grouped into folders.
 
 It automatically saves its structure (to `%USERPROFILE%\AppData\Roaming\SolutionBook.settings`) when needed, and also updates itself whenever that file changes,
